@@ -28,10 +28,14 @@ class JwtServiceTest {
 	private JwtService jwtService;
 	private AuthenticationResult authenticationResult;
 
+	private JwtProperties properties() {
+		return new JwtProperties(SECRET, Duration.ofMinutes(15), Duration.ofDays(30));
+	}
+
 	@BeforeEach
 	void setUp() {
 		Clock clock = Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC);
-		jwtService = new JwtService(new JwtProperties(SECRET, Duration.ofMinutes(15)), clock);
+		jwtService = new JwtService(properties(), clock);
 		ReflectionTestUtils.invokeMethod(jwtService, "initSigningKey");
 		authenticationResult = new AuthenticationResult(USER_ID, ORGANIZATION_ID, EMAIL);
 	}
@@ -95,12 +99,18 @@ class JwtServiceTest {
 	@Test
 	void parseAndValidate_rejectsExpiredToken() {
 		Clock issuedClock = Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneOffset.UTC);
-		JwtService issuedJwtService = new JwtService(new JwtProperties(SECRET, Duration.ofSeconds(60)), issuedClock);
+		JwtService issuedJwtService = new JwtService(
+				new JwtProperties(SECRET, Duration.ofSeconds(60), Duration.ofDays(30)),
+				issuedClock
+		);
 		ReflectionTestUtils.invokeMethod(issuedJwtService, "initSigningKey");
 		String token = issuedJwtService.generateAccessToken(authenticationResult);
 
 		Clock expiredClock = Clock.fixed(Instant.parse("2020-01-01T00:05:00Z"), ZoneOffset.UTC);
-		JwtService expiredJwtService = new JwtService(new JwtProperties(SECRET, Duration.ofSeconds(60)), expiredClock);
+		JwtService expiredJwtService = new JwtService(
+				new JwtProperties(SECRET, Duration.ofSeconds(60), Duration.ofDays(30)),
+				expiredClock
+		);
 		ReflectionTestUtils.invokeMethod(expiredJwtService, "initSigningKey");
 
 		assertThatThrownBy(() -> expiredJwtService.parseAndValidate(token))
@@ -112,7 +122,7 @@ class JwtServiceTest {
 		String token = jwtService.generateAccessToken(authenticationResult);
 
 		JwtService otherSecretService = new JwtService(
-				new JwtProperties("another-secret-not-for-production-min-32-chars", Duration.ofMinutes(15)),
+				new JwtProperties("another-secret-not-for-production-min-32-chars", Duration.ofMinutes(15), Duration.ofDays(30)),
 				Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC)
 		);
 		ReflectionTestUtils.invokeMethod(otherSecretService, "initSigningKey");

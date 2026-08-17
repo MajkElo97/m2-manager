@@ -112,7 +112,7 @@ class JwtSecurityIntegrationTest {
 	void getOrganization_withExpiredJwt_returns401() throws Exception {
 		Clock pastClock = Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneOffset.UTC);
 		JwtService pastJwtService = new JwtService(
-				new JwtProperties("jwt-it-secret-not-for-production-min-32-chars!!", Duration.ofSeconds(60)),
+				new JwtProperties("jwt-it-secret-not-for-production-min-32-chars!!", Duration.ofSeconds(60), Duration.ofDays(30)),
 				pastClock
 		);
 		org.springframework.test.util.ReflectionTestUtils.invokeMethod(pastJwtService, "initSigningKey");

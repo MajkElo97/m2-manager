@@ -10,12 +10,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.m2manager.common.exception.GlobalExceptionHandler;
+import pl.m2manager.security.auth.dto.AuthenticationResponse;
 import pl.m2manager.security.auth.dto.AuthenticationResult;
-import pl.m2manager.security.jwt.JwtService;
 
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,17 +35,12 @@ class AuthenticationControllerTest {
 	private MockMvc mockMvc;
 
 	@MockitoBean
-	private AuthenticationService authenticationService;
-
-	@MockitoBean
-	private JwtService jwtService;
+	private AuthSessionService authSessionService;
 
 	@Test
 	void login_validCredentials_returns200WithAccessToken() throws Exception {
-		when(authenticationService.authenticate("org-a", "john@example.com", "passwordA"))
-				.thenReturn(new AuthenticationResult(USER_ID, ORGANIZATION_ID, "john@example.com"));
-		when(jwtService.generateAccessToken(any(AuthenticationResult.class))).thenReturn("jwt-access-token");
-		when(jwtService.accessTokenExpirationSeconds()).thenReturn(900L);
+		when(authSessionService.login(eq("org-a"), eq("john@example.com"), eq("passwordA"), any()))
+				.thenReturn(new AuthenticationResponse("jwt-access-token", "Bearer", 900L));
 
 		mockMvc.perform(post("/api/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -60,14 +56,15 @@ class AuthenticationControllerTest {
 				.andExpect(jsonPath("$.tokenType").value("Bearer"))
 				.andExpect(jsonPath("$.expiresIn").value(900))
 				.andExpect(jsonPath("$.password").doesNotExist())
-				.andExpect(jsonPath("$.passwordHash").doesNotExist());
+				.andExpect(jsonPath("$.passwordHash").doesNotExist())
+				.andExpect(jsonPath("$.refreshToken").doesNotExist());
 
-		verify(authenticationService).authenticate("org-a", "john@example.com", "passwordA");
+		verify(authSessionService).login(eq("org-a"), eq("john@example.com"), eq("passwordA"), any());
 	}
 
 	@Test
 	void login_wrongPassword_returns401() throws Exception {
-		when(authenticationService.authenticate(any(), any(), any()))
+		when(authSessionService.login(any(), any(), any(), any()))
 				.thenThrow(new BadCredentialsException(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE));
 
 		mockMvc.perform(post("/api/auth/login")
@@ -85,7 +82,7 @@ class AuthenticationControllerTest {
 
 	@Test
 	void login_unknownOrganization_returns401() throws Exception {
-		when(authenticationService.authenticate(any(), any(), any()))
+		when(authSessionService.login(any(), any(), any(), any()))
 				.thenThrow(new BadCredentialsException(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE));
 
 		mockMvc.perform(post("/api/auth/login")
@@ -103,7 +100,7 @@ class AuthenticationControllerTest {
 
 	@Test
 	void login_unknownUser_returns401() throws Exception {
-		when(authenticationService.authenticate(any(), any(), any()))
+		when(authSessionService.login(any(), any(), any(), any()))
 				.thenThrow(new BadCredentialsException(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE));
 
 		mockMvc.perform(post("/api/auth/login")
@@ -121,7 +118,7 @@ class AuthenticationControllerTest {
 
 	@Test
 	void login_inactiveUser_returns401() throws Exception {
-		when(authenticationService.authenticate(any(), any(), any()))
+		when(authSessionService.login(any(), any(), any(), any()))
 				.thenThrow(new BadCredentialsException(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE));
 
 		mockMvc.perform(post("/api/auth/login")

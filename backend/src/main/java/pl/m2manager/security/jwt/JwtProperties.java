@@ -11,6 +11,7 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "security.jwt")
 public record JwtProperties(
 		@NotBlank String secret,
-		@NotNull Duration accessTokenExpiration
+		@NotNull Duration accessTokenExpiration,
+		@NotNull Duration refreshTokenExpiration
 ) {
 }
