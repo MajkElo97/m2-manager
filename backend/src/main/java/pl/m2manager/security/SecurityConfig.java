@@ -10,7 +10,8 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Production-oriented security configuration.
- * Only health checks are publicly accessible until authentication is implemented.
+ * Only health checks are publicly accessible until login/JWT endpoints are implemented.
+ * Programmatic authentication is handled by {@link pl.m2manager.security.auth.AuthenticationService}.
  */
 @Configuration
 @Profile("!dev & !test")
