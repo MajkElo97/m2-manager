@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: m2-manager-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: m2manager
+      POSTGRES_USER: m2manager
+      POSTGRES_PASSWORD: m2manager_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U m2manager -d m2manager"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

@@ -1,0 +1,390 @@
+---
+description: M2 Manager — główne zasady projektu
+alwaysApply: true
+---
+
+# M2 Manager — Project Rules
+
+## 1. Projekt
+
+M2 Manager jest aplikacją SaaS do zarządzania firmami sprzątającymi.
+
+Obecna aplikacja Google Apps Script jest źródłem wiedzy o istniejącym UI i funkcjach, ale NIE jest architekturą docelową.
+
+Docelowy stack:
+
+- Backend: Java 25
+- Framework: Spring Boot
+- Database: PostgreSQL
+- ORM: Spring Data JPA / Hibernate
+- Database migrations: Flyway
+- Security: Spring Security
+- Frontend: React + TypeScript
+- Build frontend: Vite
+- Containers: Docker
+- Repository: GitHub
+- Production: AWS
+- Google integration: Google Calendar API
+
+## 2. Architecture
+
+Projekt jest modularnym monolitem.
+
+Backend:
+
+Controller
+    ↓
+Service
+    ↓
+Repository
+    ↓
+PostgreSQL
+
+Nie używamy mikroserwisów bez konkretnego uzasadnienia.
+
+Controller:
+- obsługuje HTTP
+- waliduje request DTO
+- deleguje do Service
+- zwraca Response DTO
+
+Controller NIE zawiera logiki biznesowej.
+
+Service:
+- zawiera logikę biznesową
+- sprawdza uprawnienia
+- sprawdza organization scope
+- wykonuje operacje na repozytoriach
+- obsługuje transakcje
+
+Repository:
+- dostęp do danych
+- Spring Data JPA
+- żadnej logiki biznesowej
+
+## 3. Multi-tenancy
+
+Aplikacja jest multi-tenant od pierwszego dnia.
+
+Każda organizacja ma własne dane.
+
+Każda encja biznesowa, która tego wymaga, posiada organization_id.
+
+Nigdy nie ufaj organization_id przesłanemu przez frontend.
+
+Organization musi być pobierana z uwierzytelnionego kontekstu użytkownika.
+
+Użytkownik NIE MOŻE odczytać ani zmodyfikować danych innej organizacji.
+
+Każdy query biznesowy musi respektować organization scope.
+
+## 4. Database
+
+PostgreSQL jest źródłem prawdy.
+
+Schema database jest zarządzany wyłącznie przez Flyway.
+
+NIGDY:
+- nie używaj spring.jpa.hibernate.ddl-auto=create
+- nie używaj spring.jpa.hibernate.ddl-auto=update
+- nie modyfikuj produkcyjnej bazy ręcznie
+
+Hibernate:
+spring.jpa.hibernate.ddl-auto=validate
+
+Każda zmiana struktury DB wymaga nowej migracji:
+
+V2__...
+V3__...
+V4__...
+
+Nigdy nie zmieniaj starej migracji, jeśli została już wykonana.
+
+## 5. Entities
+
+Entity nie są zwracane bezpośrednio przez REST API.
+
+Zawsze:
+
+Entity
+    ↓
+Service
+    ↓
+Response DTO
+
+Request DTO i Response DTO są osobnymi klasami.
+
+Entity nie powinny zawierać logiki UI.
+
+## 6. CRUD
+
+Każdy moduł biznesowy powinien posiadać pełny CRUD, jeżeli nie ma uzasadnienia dla ograniczenia operacji.
+
+Standard API:
+
+GET    /api/{resource}
+GET    /api/{resource}/{id}
+POST   /api/{resource}
+PUT    /api/{resource}/{id}
+DELETE /api/{resource}/{id}
+
+DELETE dla encji wspierających historię powinien preferować soft delete.
+
+## 7. Validation
+
+Każdy request musi być walidowany.
+
+Używaj Jakarta Validation:
+
+@NotNull
+@NotBlank
+@Email
+@Size
+@Positive
+itp.
+
+Błędy walidacji muszą zwracać spójny format JSON.
+
+## 8. Errors
+
+Backend ma mieć centralną obsługę wyjątków.
+
+Używaj @RestControllerAdvice.
+
+Nie zwracaj stack trace użytkownikowi.
+
+Standard:
+400 — invalid request
+401 — unauthenticated
+403 — no permission
+404 — resource not found
+409 — business conflict
+500 — unexpected server error
+
+## 9. Security
+
+Frontend NIE jest mechanizmem bezpieczeństwa.
+
+Ukrycie przycisku nie oznacza braku dostępu.
+
+Każdy endpoint musi sprawdzić:
+1. authentication
+2. organization scope
+3. permission
+
+Model:
+RBAC.
+
+User
+ ↓
+Role
+ ↓
+Permissions
+
+Permissions:
+VIEW
+CREATE
+EDIT
+DELETE
+ADMIN
+
+ADMIN oznacza pełny dostęp do modułu.
+
+## 10. Passwords and secrets
+
+Nigdy nie przechowuj haseł plaintext.
+
+Nigdy nie zapisuj:
+- haseł
+- API keys
+- OAuth secrets
+- Google tokens
+- production credentials
+
+w kodzie lub Git.
+
+Lokalne sekrety mogą być w:
+.env
+lub lokalnej konfiguracji ignorowanej przez Git.
+
+Production secrets będą dostarczane przez bezpieczny secret manager.
+
+## 11. Google Calendar
+
+Google Calendar jest integracją, NIE źródłem prawdy.
+
+Źródłem prawdy jest PostgreSQL.
+
+ScheduleTask
+    ↓
+GoogleCalendarEvent
+
+Synchronizacja musi być idempotentna.
+
+Nie wolno tworzyć duplikatów przy ponownym sync.
+
+Błąd Google Calendar nie może usuwać zadania z M2 Managera.
+
+## 12. Schedule
+
+Rozdziel:
+
+ScheduleRule
+    ↓
+ScheduleTask
+    ↓
+GoogleCalendarEvent
+
+Reguła definiuje sposób generowania.
+
+Task jest konkretnym wykonaniem.
+
+Google event jest tylko synchronizacją.
+
+Generator musi być przygotowany do późniejszego dodania:
+- urlopów
+- absencji
+- zastępstw
+- godzin pracy
+- limitów godzin
+- lokalizacji
+- czasu przejazdu
+- tras
+- optymalizacji
+
+Nie implementuj zaawansowanej optymalizacji w MVP bez wyraźnego polecenia.
+
+## 13. Finance
+
+Kwoty finansowe zawsze używają BigDecimal.
+
+NIGDY float/double dla pieniędzy.
+
+Finanse mają być rozszerzalne.
+
+MVP:
+- przychody wspólnot
+- podstawowe koszty
+
+Docelowo:
+- faktury
+- koszty pracowników
+- paliwo
+- leasing
+- magazyn
+- koszty przypisane do obiektów
+- rentowność
+
+## 14. Audit
+
+Ważne operacje biznesowe i administracyjne powinny być audytowane.
+
+AuditLog:
+- user
+- organization
+- action
+- entity
+- entityId
+- oldData
+- newData
+- timestamp
+
+## 15. Tests
+
+Nowa funkcjonalność powinna posiadać testy.
+
+Minimum:
+- Service unit tests
+- Controller/API tests dla ważnych endpointów
+- Repository/integration tests dla krytycznych operacji
+
+Nie twórz testów tylko po to, żeby zwiększyć coverage.
+
+Testuj rzeczywiste zachowanie.
+
+## 16. UI
+
+Obecny M2 Manager ma zostać wizualnym punktem odniesienia.
+
+NIE zmieniaj samowolnie:
+- layoutu
+- kolorystyki
+- sidebaru
+- sposobu nawigacji
+- tabel
+- formularzy
+
+Możemy:
+- dodać dark mode
+- poprawić responsywność
+- zoptymalizować mobile UI
+- poprawić UX, jeśli użytkownik wyraźnie tego chce
+
+Mobile jest ważny, ponieważ pracownicy będą korzystać z aplikacji na telefonach.
+
+## 17. AI coding rules
+
+Przed implementacją większej funkcji:
+
+1. Przeanalizuj istniejącą architekturę.
+2. Przeczytaj odpowiednią dokumentację w /docs.
+3. Zaproponuj plan.
+4. Nie wykonuj dużej zmiany bez jasnego zakresu.
+5. Nie zmieniaj niezwiązanych modułów.
+6. Nie dodawaj bibliotek bez uzasadnienia.
+7. Nie usuwaj istniejącej funkcjonalności bez polecenia.
+8. Zachowuj kompatybilność z istniejącą architekturą.
+9. Po implementacji uruchom odpowiednie testy.
+10. Podsumuj zmienione pliki.
+
+## 18. Existing M2 Manager
+
+Stary projekt Google Apps Script jest referencją funkcjonalną.
+
+Nie kopiuj jego:
+- SheetService
+- Apps Script stores
+- Google Sheets jako database
+- google.script.run
+- fikcyjnego CurrentUserService
+
+Migracja ma zachować funkcjonalność, ale poprawić architekturę.
+
+## 19. Code quality
+
+Preferuj:
+- prosty kod
+- jasne nazwy
+- małe klasy
+- małe metody
+- dependency injection
+- constructor injection
+- immutability tam, gdzie ma sens
+
+Unikaj:
+- global state
+- magic numbers
+- duplikacji
+- niepotrzebnych abstrakcji
+- overengineering
+
+## 20. Before changing architecture
+
+Jeżeli zadanie wymaga zmiany architektury, najpierw wyjaśnij:
+- dlaczego jest potrzebna
+- jakie są konsekwencje
+- czy istnieje prostsza opcja
+
+Nie przebudowuj projektu samodzielnie bez powodu.
+
+## 21. Definition of Done
+
+Funkcja jest ukończona dopiero gdy:
+- kod się kompiluje
+- migracje działają
+- testy przechodzą
+- endpoint działa
+- security jest uwzględnione
+- organization scope jest uwzględniony
+- błędy są obsłużone
+- dokumentacja jest aktualna, jeśli zmiana jej wymaga
