@@ -7,25 +7,40 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.m2manager.security.auth.dto.AuthenticationResult;
+import pl.m2manager.user.repository.UserRepository;
+
+import java.time.Clock;
+import java.util.UUID;
 
 @Service
 public class AuthenticationService {
 
 	private final M2UserDetailsService userDetailsService;
 	private final PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
+	private final Clock clock;
 
-	public AuthenticationService(M2UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+	public AuthenticationService(
+			M2UserDetailsService userDetailsService,
+			PasswordEncoder passwordEncoder,
+			UserRepository userRepository,
+			Clock clock
+	) {
 		this.userDetailsService = userDetailsService;
 		this.passwordEncoder = passwordEncoder;
+		this.userRepository = userRepository;
+		this.clock = clock;
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public AuthenticationResult authenticate(String organizationSlug, String email, String password) {
 		AuthenticatedUser authenticatedUser = loadUser(organizationSlug, email);
 
 		if (!authenticatedUser.isEnabled() || !passwordEncoder.matches(password, authenticatedUser.getPassword())) {
 			throw new BadCredentialsException(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE);
 		}
+
+		updateLastLoginAt(authenticatedUser.getUserId(), authenticatedUser.getOrganizationId());
 
 		new UsernamePasswordAuthenticationToken(
 				authenticatedUser,
@@ -37,6 +52,12 @@ public class AuthenticationService {
 				authenticatedUser.getUserId(),
 				authenticatedUser.getOrganizationId(),
 				authenticatedUser.getEmail()
+		);
+	}
+
+	private void updateLastLoginAt(UUID userId, UUID organizationId) {
+		userRepository.findByIdAndOrganizationId(userId, organizationId).ifPresent(user ->
+				user.setLastLoginAt(clock.instant())
 		);
 	}
 

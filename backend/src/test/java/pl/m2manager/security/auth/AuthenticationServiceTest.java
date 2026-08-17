@@ -10,11 +10,19 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import pl.m2manager.security.auth.dto.AuthenticationResult;
+import pl.m2manager.user.entity.User;
+import pl.m2manager.user.repository.UserRepository;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,12 +34,19 @@ class AuthenticationServiceTest {
 	private static final String EMAIL = "john@example.com";
 	private static final String PASSWORD = "passwordA";
 	private static final String PASSWORD_HASH = "$2a$12$encoded-password-hash";
+	private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
 
 	@Mock
 	private M2UserDetailsService userDetailsService;
 
 	@Mock
 	private PasswordEncoder passwordEncoder;
+
+	@Mock
+	private UserRepository userRepository;
+
+	@Mock
+	private Clock clock;
 
 	@InjectMocks
 	private AuthenticationService authenticationService;
@@ -45,14 +60,18 @@ class AuthenticationServiceTest {
 
 	@Test
 	void authenticate_validCredentialsReturnsAuthenticationResult() {
+		User user = new User();
 		when(userDetailsService.loadByOrganizationSlugAndEmail("org-a", EMAIL)).thenReturn(authenticatedUser);
 		when(passwordEncoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
+		when(clock.instant()).thenReturn(NOW);
+		when(userRepository.findByIdAndOrganizationId(USER_ID, ORGANIZATION_ID)).thenReturn(Optional.of(user));
 
 		AuthenticationResult result = authenticationService.authenticate("org-a", EMAIL, PASSWORD);
 
 		assertThat(result.userId()).isEqualTo(USER_ID);
 		assertThat(result.organizationId()).isEqualTo(ORGANIZATION_ID);
 		assertThat(result.email()).isEqualTo(EMAIL);
+		assertThat(user.getLastLoginAt()).isEqualTo(NOW);
 		verify(userDetailsService).loadByOrganizationSlugAndEmail("org-a", EMAIL);
 		verify(passwordEncoder).matches(PASSWORD, PASSWORD_HASH);
 	}
@@ -65,6 +84,8 @@ class AuthenticationServiceTest {
 		assertThatThrownBy(() -> authenticationService.authenticate("org-a", EMAIL, "wrong-password"))
 				.isInstanceOf(BadCredentialsException.class)
 				.hasMessage(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE);
+
+		verify(userRepository, never()).findByIdAndOrganizationId(any(), any());
 	}
 
 	@Test
@@ -95,5 +116,7 @@ class AuthenticationServiceTest {
 		assertThatThrownBy(() -> authenticationService.authenticate("org-a", EMAIL, PASSWORD))
 				.isInstanceOf(BadCredentialsException.class)
 				.hasMessage(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE);
+
+		verify(userRepository, never()).findByIdAndOrganizationId(any(), any());
 	}
 }

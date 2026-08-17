@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -48,6 +49,19 @@ public class GlobalExceptionHandler {
 				"Validation failed",
 				request.getRequestURI(),
 				fieldErrors
+		);
+	}
+
+	@ExceptionHandler(BadCredentialsException.class)
+	public ResponseEntity<ErrorResponse> handleBadCredentials(
+			BadCredentialsException ex,
+			HttpServletRequest request
+	) {
+		return buildResponse(
+				HttpStatus.UNAUTHORIZED,
+				ex.getMessage(),
+				request.getRequestURI(),
+				null
 		);
 	}
 

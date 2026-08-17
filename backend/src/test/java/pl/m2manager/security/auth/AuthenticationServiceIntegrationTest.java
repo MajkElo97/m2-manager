@@ -102,6 +102,27 @@ class AuthenticationServiceIntegrationTest {
 				.hasMessage(M2UserDetailsService.INVALID_CREDENTIALS_MESSAGE);
 	}
 
+	@Test
+	void authenticate_successfulLoginUpdatesLastLoginAt() {
+		assertThat(userA.getLastLoginAt()).isNull();
+
+		authenticationService.authenticate(slugA, "john@example.com", "passwordA");
+
+		User reloaded = userRepository.findById(userA.getId()).orElseThrow();
+		assertThat(reloaded.getLastLoginAt()).isNotNull();
+	}
+
+	@Test
+	void authenticate_failedLoginDoesNotUpdateLastLoginAt() {
+		assertThat(userA.getLastLoginAt()).isNull();
+
+		assertThatThrownBy(() -> authenticationService.authenticate(slugA, "john@example.com", "wrong-password"))
+				.isInstanceOf(BadCredentialsException.class);
+
+		User reloaded = userRepository.findById(userA.getId()).orElseThrow();
+		assertThat(reloaded.getLastLoginAt()).isNull();
+	}
+
 	private Organization saveOrganization(String name, String slug) {
 		Organization organization = new Organization();
 		organization.setName(name);
