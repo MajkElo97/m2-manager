@@ -1,0 +1,56 @@
+.buildings-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.buildings-mobile-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 1rem;
+}
+
+.buildings-mobile-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.buildings-mobile-card__code {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.buildings-mobile-card__name {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.buildings-mobile-card__details {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0 0 0.875rem;
+  font-size: 0.875rem;
+}
+
+.buildings-mobile-card__details dt {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.buildings-mobile-card__details dd {
+  margin: 0 0 0.375rem;
+}
+
+.buildings-mobile-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

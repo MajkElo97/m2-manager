@@ -1,0 +1,69 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-metric__value {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.dashboard-metric__trend {
+  margin: 0.375rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.dashboard-tasks__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dashboard-tasks__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-tasks__item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.dashboard-tasks__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.dashboard-tasks__date {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-tasks__item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

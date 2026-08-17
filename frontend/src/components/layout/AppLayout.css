@@ -1,0 +1,34 @@
+.app-layout {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.app-layout__body {
+  display: flex;
+  min-height: calc(100vh - var(--topbar-height));
+}
+
+.app-layout__content {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem;
+}
+
+.app-layout__content-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.app-layout__backdrop {
+  position: fixed;
+  inset: var(--topbar-height) 0 0 0;
+  z-index: 850;
+  border: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 640px) {
+  .app-layout__content {
+    padding: 1rem;
+  }
+}

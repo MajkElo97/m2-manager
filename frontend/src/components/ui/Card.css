@@ -1,0 +1,17 @@
+.ui-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-card__title {
+  margin: 0;
+  padding: 1rem 1.25rem 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.ui-card__body {
+  padding: 1rem 1.25rem 1.25rem;
+}
