@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import pl.m2manager.security.jwt.InvalidRefreshTokenException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,6 +79,13 @@ public class GlobalExceptionHandler {
 				request.getRequestURI(),
 				null
 		);
+	}
+
+	@ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+	public ResponseEntity<ErrorResponse> handleAccessDenied(
+			HttpServletRequest request
+	) {
+		return buildResponse(HttpStatus.FORBIDDEN, "Forbidden", request.getRequestURI(), null);
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
