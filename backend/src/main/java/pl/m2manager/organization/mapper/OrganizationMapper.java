@@ -11,6 +11,7 @@ public class OrganizationMapper {
 		return new OrganizationResponse(
 				organization.getId(),
 				organization.getName(),
+				organization.getSlug(),
 				organization.getNip(),
 				organization.getEmail(),
 				organization.getPhone(),

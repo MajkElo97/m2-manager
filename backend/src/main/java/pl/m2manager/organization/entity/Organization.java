@@ -26,6 +26,11 @@ public class Organization extends AuditableEntity {
 	@Column(nullable = false, length = 255)
 	private String name;
 
+	@NotBlank
+	@Size(max = 100)
+	@Column(nullable = false, length = 100, unique = true)
+	private String slug;
+
 	@Size(max = 20)
 	@Column(length = 20)
 	private String nip;
@@ -56,6 +61,14 @@ public class Organization extends AuditableEntity {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getSlug() {
+		return slug;
+	}
+
+	public void setSlug(String slug) {
+		this.slug = slug;
 	}
 
 	public String getNip() {

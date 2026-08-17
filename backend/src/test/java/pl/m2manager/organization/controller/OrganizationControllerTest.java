@@ -44,6 +44,7 @@ class OrganizationControllerTest {
 		return new OrganizationResponse(
 				ORGANIZATION_ID,
 				"M2 Manager Dev",
+				"m2-manager-dev",
 				"1234567890",
 				"dev@m2manager.local",
 				"+48123456789",
@@ -62,6 +63,7 @@ class OrganizationControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(ORGANIZATION_ID.toString()))
 				.andExpect(jsonPath("$.name").value("M2 Manager Dev"))
+				.andExpect(jsonPath("$.slug").value("m2-manager-dev"))
 				.andExpect(jsonPath("$.nip").value("1234567890"))
 				.andExpect(jsonPath("$.email").value("dev@m2manager.local"))
 				.andExpect(jsonPath("$.phone").value("+48123456789"))
@@ -78,6 +80,7 @@ class OrganizationControllerTest {
 		OrganizationResponse updatedResponse = new OrganizationResponse(
 				ORGANIZATION_ID,
 				"Updated Name",
+				"m2-manager-dev",
 				"9988776655",
 				"updated@example.com",
 				"+48987654321",

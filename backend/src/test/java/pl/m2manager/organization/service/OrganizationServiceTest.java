@@ -51,6 +51,7 @@ class OrganizationServiceTest {
 		organization = new Organization();
 		ReflectionTestUtils.setField(organization, "id", ORGANIZATION_ID);
 		organization.setName("M2 Manager Dev");
+		organization.setSlug("m2-manager-dev");
 		organization.setNip("1234567890");
 		organization.setEmail("dev@m2manager.local");
 		organization.setPhone("+48123456789");
@@ -59,6 +60,7 @@ class OrganizationServiceTest {
 		organizationResponse = new OrganizationResponse(
 				ORGANIZATION_ID,
 				"M2 Manager Dev",
+				"m2-manager-dev",
 				"1234567890",
 				"dev@m2manager.local",
 				"+48123456789",
@@ -109,6 +111,7 @@ class OrganizationServiceTest {
 				new OrganizationResponse(
 						ORGANIZATION_ID,
 						"Updated Name",
+						"m2-manager-dev",
 						"9988776655",
 						"updated@example.com",
 						"+48987654321",
@@ -136,6 +139,7 @@ class OrganizationServiceTest {
 		organizationResponse = new OrganizationResponse(
 				originalId,
 				organization.getName(),
+				organization.getSlug(),
 				organization.getNip(),
 				organization.getEmail(),
 				organization.getPhone(),

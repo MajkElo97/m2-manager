@@ -178,6 +178,7 @@ class UsersRolesPermissionsRepositoryTest {
 	private Organization saveOrganization(String name) {
 		Organization organization = new Organization();
 		organization.setName(name);
+		organization.setSlug(name.toLowerCase().replace(' ', '-') + "-" + UUID.randomUUID().toString().substring(0, 8));
 		organization.setTimezone("Europe/Warsaw");
 		return organizationRepository.saveAndFlush(organization);
 	}
