@@ -63,14 +63,21 @@ public class JwtService {
 					.parseSignedClaims(token)
 					.getPayload();
 
+			String subject = claims.getSubject();
+			String organizationIdClaim = claims.get(ORGANIZATION_ID_CLAIM, String.class);
+			String emailClaim = claims.get(EMAIL_CLAIM, String.class);
+			if (subject == null || organizationIdClaim == null || emailClaim == null) {
+				throw new InvalidJwtException("Invalid JWT", new IllegalArgumentException("Missing required JWT claims"));
+			}
+
 			return new JwtAuthenticatedPrincipal(
-					UUID.fromString(claims.getSubject()),
-					UUID.fromString(claims.get(ORGANIZATION_ID_CLAIM, String.class)),
-					claims.get(EMAIL_CLAIM, String.class)
+					UUID.fromString(subject),
+					UUID.fromString(organizationIdClaim),
+					emailClaim
 			);
 		} catch (ExpiredJwtException ex) {
 			throw new InvalidJwtException("JWT expired", ex);
-		} catch (JwtException | IllegalArgumentException ex) {
+		} catch (JwtException | IllegalArgumentException | NullPointerException ex) {
 			throw new InvalidJwtException("Invalid JWT", ex);
 		}
 	}

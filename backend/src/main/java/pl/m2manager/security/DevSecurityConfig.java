@@ -7,21 +7,34 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import pl.m2manager.security.jwt.JwtAuthenticationFilter;
+import pl.m2manager.security.jwt.JwtService;
 
 /**
  * Development security configuration.
- * Permits all requests locally until JWT/session authentication is implemented.
+ * Parses JWT bearer tokens when present so {@code @PreAuthorize} works after login,
+ * while keeping CSRF disabled and permitting all HTTP requests for local development.
  */
 @Configuration
 @Profile("dev")
 public class DevSecurityConfig {
 
 	@Bean
-	SecurityFilterChain devSecurityFilterChain(HttpSecurity http) throws Exception {
+	JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService) {
+		return new JwtAuthenticationFilter(jwtService);
+	}
+
+	@Bean
+	SecurityFilterChain devSecurityFilterChain(
+			HttpSecurity http,
+			JwtAuthenticationFilter jwtAuthenticationFilter
+	) throws Exception {
 		http
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable);
 

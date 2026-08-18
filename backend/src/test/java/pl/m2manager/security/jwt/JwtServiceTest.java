@@ -137,6 +137,20 @@ class JwtServiceTest {
 				.isInstanceOf(InvalidJwtException.class);
 	}
 
+	@Test
+	void parseAndValidate_rejectsTokenMissingRequiredClaims() {
+		SecretKey signingKey = (SecretKey) ReflectionTestUtils.getField(jwtService, "signingKey");
+		String token = Jwts.builder()
+				.subject(USER_ID.toString())
+				.issuedAt(Date.from(Instant.parse("2026-01-01T00:00:00Z")))
+				.expiration(Date.from(Instant.parse("2026-01-01T01:00:00Z")))
+				.signWith(signingKey, Jwts.SIG.HS256)
+				.compact();
+
+		assertThatThrownBy(() -> jwtService.parseAndValidate(token))
+				.isInstanceOf(InvalidJwtException.class);
+	}
+
 	private Claims parseClaims(String token) {
 		SecretKey signingKey = (SecretKey) ReflectionTestUtils.getField(jwtService, "signingKey");
 		Instant now = Instant.parse("2026-01-01T00:00:00Z");
