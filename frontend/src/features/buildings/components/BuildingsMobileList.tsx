@@ -6,8 +6,10 @@ import './BuildingsMobileList.css';
 
 interface BuildingsMobileListProps {
   buildings: Building[];
+  canViewStaircases: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  onStaircases: (building: Building) => void;
   onEdit: (building: Building) => void;
   onDeactivate: (building: Building) => void;
 }
@@ -22,8 +24,10 @@ function statusVariant(status: Building['status']): 'success' | 'neutral' {
 
 export function BuildingsMobileList({
   buildings,
+  canViewStaircases,
   canEdit,
   canDelete,
+  onStaircases,
   onEdit,
   onDeactivate,
 }: BuildingsMobileListProps) {
@@ -59,6 +63,11 @@ export function BuildingsMobileList({
           </dl>
 
           <div className="buildings-mobile-card__actions">
+            {canViewStaircases ? (
+              <Button variant="secondary" size="sm" onClick={() => onStaircases(building)}>
+                Klatki
+              </Button>
+            ) : null}
             {canEdit ? (
               <Button variant="secondary" size="sm" onClick={() => onEdit(building)}>
                 Edytuj

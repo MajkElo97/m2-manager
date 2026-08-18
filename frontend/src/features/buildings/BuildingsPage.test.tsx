@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { BuildingsPage } from '@/features/buildings/pages/BuildingsPage';
 import type { Building } from '@/features/buildings/types/building';
@@ -184,11 +185,17 @@ function BuildingsPageHarness() {
     void loadPermissions();
   }, [loadPermissions]);
 
-  return <BuildingsPage />;
+  return (
+    <Routes>
+      <Route path="/buildings" element={<BuildingsPage />} />
+      <Route path="/buildings/:buildingId/staircases" element={<div>Staircases module</div>} />
+    </Routes>
+  );
 }
 
 function renderBuildingsPage(permissions: string[] = allPermissions) {
   return renderWithProviders(<BuildingsPageHarness />, {
+    routerProps: { initialEntries: ['/buildings'] },
     permissionsAdapter: {
       loadPermissions: async () => permissions,
     },
@@ -380,6 +387,23 @@ describe('BuildingsPage', () => {
     expect(
       screen.getByText('Nie znaleziono budynków spełniających kryteria.'),
     ).toBeInTheDocument();
+  });
+
+  it('navigates to staircases when Klatki action is clicked', async () => {
+    const user = userEvent.setup();
+    renderBuildingsPage(['BUILDINGS_VIEW']);
+
+    await waitForBuildingInTable('PUSTA64');
+    await user.click(screen.getByRole('button', { name: 'Klatki' }));
+
+    expect(await screen.findByText('Staircases module')).toBeInTheDocument();
+  });
+
+  it('hides Klatki action when user lacks BUILDINGS_VIEW permission', async () => {
+    renderBuildingsPage([]);
+
+    await waitForBuildingInTable('PUSTA64');
+    expect(screen.queryByRole('button', { name: 'Klatki' })).not.toBeInTheDocument();
   });
 
   it('renders error state on server failure', async () => {

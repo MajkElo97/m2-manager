@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { AppLayoutContainer } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/Button';
@@ -36,7 +37,9 @@ interface FormModalState {
 }
 
 export function BuildingsPage() {
+  const navigate = useNavigate();
   const { hasPermission } = usePermissions();
+  const canViewStaircases = hasPermission('BUILDINGS_VIEW');
   const canCreate = hasPermission('BUILDINGS_CREATE');
   const canEdit = hasPermission('BUILDINGS_EDIT');
   const canDelete = hasPermission('BUILDINGS_DELETE');
@@ -68,6 +71,10 @@ export function BuildingsPage() {
   const openEditModal = (building: Building) => {
     setFormError(null);
     setFormModal({ mode: 'edit', building });
+  };
+
+  const openStaircases = (building: Building) => {
+    void navigate(`/buildings/${building.id}/staircases`);
   };
 
   const closeFormModal = () => {
@@ -179,8 +186,10 @@ export function BuildingsPage() {
         <div className="buildings-page__desktop">
           <BuildingsTable
             buildings={buildings}
+            canViewStaircases={canViewStaircases}
             canEdit={canEdit}
             canDelete={canDelete}
+            onStaircases={openStaircases}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
           />
@@ -188,8 +197,10 @@ export function BuildingsPage() {
         <div className="buildings-page__mobile">
           <BuildingsMobileList
             buildings={buildings}
+            canViewStaircases={canViewStaircases}
             canEdit={canEdit}
             canDelete={canDelete}
+            onStaircases={openStaircases}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
           />

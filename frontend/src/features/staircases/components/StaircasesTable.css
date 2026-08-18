@@ -1,0 +1,36 @@
+.staircases-table-wrapper {
+  overflow-x: auto;
+}
+
+.staircases-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.staircases-table th,
+.staircases-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.staircases-table th {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.staircases-table__code {
+  font-weight: 600;
+}
+
+.staircases-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.staircases-table__empty-cell {
+  color: var(--color-text-muted);
+}
