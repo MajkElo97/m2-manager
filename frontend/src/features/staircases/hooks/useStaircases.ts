@@ -13,7 +13,7 @@ interface UseStaircasesResult {
   refetch: () => Promise<void>;
 }
 
-export function useStaircases(buildingId: string): UseStaircasesResult {
+export function useStaircases(buildingId?: string): UseStaircasesResult {
   const [staircases, setStaircases] = useState<Staircase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

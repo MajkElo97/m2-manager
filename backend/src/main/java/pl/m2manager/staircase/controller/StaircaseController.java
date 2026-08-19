@@ -32,9 +32,12 @@ public class StaircaseController {
 	}
 
 	@GetMapping
-	@PreAuthorize("@authorizationService.hasPermission('BUILDINGS_VIEW')")
-	public List<StaircaseResponse> list(@RequestParam UUID buildingId) {
-		return staircaseService.getAll(buildingId);
+	@PreAuthorize("@authorizationService.canListStaircases(#buildingId)")
+	public List<StaircaseResponse> list(@RequestParam(required = false) UUID buildingId) {
+		if (buildingId != null) {
+			return staircaseService.getAll(buildingId);
+		}
+		return staircaseService.getAllForOrganization();
 	}
 
 	@GetMapping("/{id}")

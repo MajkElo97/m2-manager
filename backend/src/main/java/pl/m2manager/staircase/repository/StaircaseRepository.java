@@ -13,6 +13,8 @@ public interface StaircaseRepository extends JpaRepository<Staircase, UUID> {
 
 	List<Staircase> findAllByOrganizationIdAndBuildingIdOrderByDesignationAsc(UUID organizationId, UUID buildingId);
 
+	List<Staircase> findAllByOrganizationIdOrderByCodeAsc(UUID organizationId);
+
 	Optional<Staircase> findByOrganizationIdAndCode(UUID organizationId, String code);
 
 	Optional<Staircase> findByBuildingIdAndDesignation(UUID buildingId, String designation);

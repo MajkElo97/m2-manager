@@ -57,7 +57,7 @@ export interface AppRoute {
 export const appRoutes: AppRoute[] = [
   { path: '/dashboard', moduleName: 'Dashboard' },
   { path: '/buildings', moduleName: 'Budynki' },
-  { path: '/staircases', moduleName: 'Klatki schodowe', placeholder: true },
+  { path: '/staircases', moduleName: 'Klatki schodowe' },
   { path: '/scopes', moduleName: 'Zakresy', placeholder: true },
   { path: '/activities', moduleName: 'Czynności', placeholder: true },
   { path: '/employees', moduleName: 'Pracownicy', placeholder: true },

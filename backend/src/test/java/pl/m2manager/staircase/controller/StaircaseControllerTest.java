@@ -55,6 +55,17 @@ class StaircaseControllerTest {
 	}
 
 	@Test
+	void listAllForOrganization_returns200() throws Exception {
+		when(staircaseService.getAllForOrganization()).thenReturn(List.of(sampleResponse()));
+
+		mockMvc.perform(get("/api/staircases"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].code").value("KL0001"));
+
+		verify(staircaseService).getAllForOrganization();
+	}
+
+	@Test
 	void getById_returns200() throws Exception {
 		when(staircaseService.getById(STAIRCASE_ID)).thenReturn(sampleResponse());
 

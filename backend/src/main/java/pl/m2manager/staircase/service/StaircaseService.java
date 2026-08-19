@@ -46,6 +46,13 @@ public class StaircaseService {
 				.toList();
 	}
 
+	public List<StaircaseResponse> getAllForOrganization() {
+		UUID organizationId = tenantContext.getCurrentOrganizationId();
+		return staircaseRepository.findAllByOrganizationIdOrderByCodeAsc(organizationId).stream()
+				.map(staircaseMapper::toResponse)
+				.toList();
+	}
+
 	public StaircaseResponse getById(UUID staircaseId) {
 		return staircaseMapper.toResponse(requireStaircaseInCurrentOrganization(staircaseId));
 	}

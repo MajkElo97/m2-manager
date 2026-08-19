@@ -46,6 +46,13 @@ public class AuthorizationService {
 				.orElse(false);
 	}
 
+	public boolean canListStaircases(java.util.UUID buildingId) {
+		if (buildingId != null) {
+			return hasPermission("BUILDINGS_VIEW");
+		}
+		return hasPermission("STAIRCASES_VIEW");
+	}
+
 	private Optional<Set<String>> resolveEffectiveCodes() {
 		return getAuthenticatedPrincipal().map(principal -> effectivePermissionService.resolvePermissionCodes(
 				principal.userId(),

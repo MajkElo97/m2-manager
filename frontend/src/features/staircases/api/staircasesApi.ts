@@ -5,8 +5,11 @@ import type {
   UpdateStaircasePayload,
 } from '@/features/staircases/types/staircase';
 
-export function getStaircases(buildingId: string): Promise<Staircase[]> {
-  return apiClient.get<Staircase[]>(`/api/staircases?buildingId=${encodeURIComponent(buildingId)}`);
+export function getStaircases(buildingId?: string): Promise<Staircase[]> {
+  const path = buildingId
+    ? `/api/staircases?buildingId=${encodeURIComponent(buildingId)}`
+    : '/api/staircases';
+  return apiClient.get<Staircase[]>(path);
 }
 
 export function getStaircase(id: string): Promise<Staircase> {

@@ -9,51 +9,74 @@ import type { Staircase } from '@/features/staircases/types/staircase';
 import { usePermissions } from '@/features/permissions/PermissionProvider';
 import { renderWithProviders } from '@/test/testUtils';
 
-const buildingId = '11111111-1111-1111-1111-111111111111';
+const buildingAId = '11111111-1111-1111-1111-111111111111';
+const buildingBId = '22222222-2222-2222-2222-222222222222';
 
-const sampleBuilding: Building = {
-  id: buildingId,
-  code: 'KASPRZAKA6',
-  name: 'Kasprzaka 6',
-  address: 'ul. Kasprzaka 6',
-  city: 'Dąbrowa Górnicza',
-  nip: null,
-  phone: null,
-  email: null,
-  managerCode: null,
-  supervisorCode: null,
-  employeeCode: null,
-  contractSignedAt: null,
-  serviceStartDate: null,
-  noticePeriodMonths: 3,
-  status: 'ACTIVE',
-  notes: null,
-  createdAt: '2025-01-01T00:00:00Z',
-  updatedAt: '2025-01-01T00:00:00Z',
-};
+const buildings: Building[] = [
+  {
+    id: buildingAId,
+    code: 'PUSTA64',
+    name: 'Pusta 64',
+    address: 'ul. Pusta 64',
+    city: 'Warszawa',
+    nip: null,
+    phone: null,
+    email: null,
+    managerCode: null,
+    supervisorCode: null,
+    employeeCode: null,
+    contractSignedAt: null,
+    serviceStartDate: null,
+    noticePeriodMonths: 3,
+    status: 'ACTIVE',
+    notes: null,
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: buildingBId,
+    code: 'KASPRZAKA6',
+    name: 'Kasprzaka 6',
+    address: 'ul. Kasprzaka 6',
+    city: 'Dąbrowa Górnicza',
+    nip: null,
+    phone: null,
+    email: null,
+    managerCode: null,
+    supervisorCode: null,
+    employeeCode: null,
+    contractSignedAt: null,
+    serviceStartDate: null,
+    noticePeriodMonths: 3,
+    status: 'ACTIVE',
+    notes: null,
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  },
+];
 
-const sampleStaircases: Staircase[] = [
+const staircases: Staircase[] = [
   {
     id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-    buildingId,
-    code: 'KL0003',
+    buildingId: buildingAId,
+    code: 'KL0001',
     designation: '1',
-    intercomCode: '0610#',
-    keyRequired: false,
+    intercomCode: '#2258',
+    keyRequired: true,
     elevator: false,
-    floors: 5,
+    floors: 4,
     notes: null,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
   },
   {
     id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-    buildingId,
-    code: 'KL0004',
-    designation: '2',
-    intercomCode: '2606#',
+    buildingId: buildingBId,
+    code: 'KL0003',
+    designation: '1',
+    intercomCode: '0610#',
     keyRequired: false,
-    elevator: false,
+    elevator: true,
     floors: 5,
     notes: null,
     createdAt: '2025-01-01T00:00:00Z',
@@ -61,80 +84,19 @@ const sampleStaircases: Staircase[] = [
   },
 ];
 
-interface MockFetchOptions {
-  building?: Building | null;
-  staircases?: Staircase[];
-  buildingStatus?: number;
-  listStatus?: number;
-  createStatus?: number;
-  updateStatus?: number;
-  deleteStatus?: number;
-}
-
-function createStaircasesFetchMock(options: MockFetchOptions = {}) {
-  let staircases = [...(options.staircases ?? sampleStaircases)];
-  const building = options.building ?? sampleBuilding;
-
+function createGlobalStaircasesFetchMock(options: { listStatus?: number } = {}) {
   return vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
 
-    if (url.match(/\/api\/buildings\/[^/?]+$/) && (!init?.method || init.method === 'GET')) {
-      if (options.buildingStatus === 404) {
-        return Response.json({ status: 404, message: 'Not found' }, { status: 404 });
-      }
-      if (building === null) {
-        return Response.json({ status: 404, message: 'Not found' }, { status: 404 });
-      }
-      return Response.json(building);
+    if (url.includes('/api/buildings') && (!init?.method || init.method === 'GET')) {
+      return Response.json(buildings);
     }
 
-    if (url.includes('/api/staircases') && (!init?.method || init.method === 'GET')) {
+    if (url.endsWith('/api/staircases') && (!init?.method || init.method === 'GET')) {
       if (options.listStatus === 403) {
         return Response.json({ status: 403, message: 'Forbidden' }, { status: 403 });
       }
-      if (options.listStatus === 404) {
-        return Response.json({ status: 404, message: 'Not found' }, { status: 404 });
-      }
       return Response.json(staircases);
-    }
-
-    if (url.includes('/api/staircases') && init?.method === 'POST') {
-      if (options.createStatus && options.createStatus !== 201) {
-        return Response.json({ status: options.createStatus, message: 'Error' }, { status: options.createStatus });
-      }
-
-      const body = JSON.parse(String(init.body)) as Partial<Staircase>;
-      const created: Staircase = {
-        id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
-        buildingId: body.buildingId ?? buildingId,
-        code: body.code ?? 'NEW',
-        designation: body.designation ?? '1',
-        intercomCode: body.intercomCode ?? null,
-        keyRequired: body.keyRequired ?? false,
-        elevator: body.elevator ?? false,
-        floors: body.floors ?? 4,
-        notes: body.notes ?? null,
-        createdAt: '2025-01-01T00:00:00Z',
-        updatedAt: '2025-01-01T00:00:00Z',
-      };
-      staircases = [...staircases, created];
-      return Response.json(created, { status: 201 });
-    }
-
-    if (url.match(/\/api\/staircases\/[^/?]+$/) && init?.method === 'PUT') {
-      const id = url.split('/').pop()!;
-      const body = JSON.parse(String(init.body)) as Partial<Staircase>;
-      staircases = staircases.map((staircase) =>
-        staircase.id === id ? { ...staircase, ...body, id: staircase.id } : staircase,
-      );
-      const updated = staircases.find((staircase) => staircase.id === id);
-      return Response.json(updated);
-    }
-
-    if (url.match(/\/api\/staircases\/[^/?]+$/) && init?.method === 'DELETE') {
-      const id = url.split('/').pop()!;
-      staircases = staircases.filter((staircase) => staircase.id !== id);
-      return new Response(null, { status: 204 });
     }
 
     return new Response(null, { status: 404 });
@@ -150,164 +112,133 @@ function StaircasesPageHarness() {
 
   return (
     <Routes>
-      <Route path="/buildings/:buildingId/staircases" element={<StaircasesPage />} />
+      <Route path="/staircases" element={<StaircasesPage />} />
+      <Route path="/buildings/:buildingId/staircases" element={<div>Building staircases</div>} />
     </Routes>
   );
 }
 
-function renderStaircasesPage(permissions: string[] = ['BUILDINGS_VIEW', 'BUILDINGS_EDIT']) {
+function renderGlobalStaircasesPage(permissions: string[] = ['STAIRCASES_VIEW', 'BUILDINGS_VIEW']) {
   return renderWithProviders(<StaircasesPageHarness />, {
-    routerProps: { initialEntries: [`/buildings/${buildingId}/staircases`] },
+    routerProps: { initialEntries: ['/staircases'] },
     permissionsAdapter: {
       loadPermissions: async () => permissions,
     },
   });
 }
 
-async function waitForStaircaseInTable(code: string) {
-  await waitFor(() => {
-    expect(within(screen.getByRole('table')).getByText(code)).toBeInTheDocument();
-  });
-}
-
 describe('StaircasesPage', () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', createStaircasesFetchMock());
+    vi.stubGlobal('fetch', createGlobalStaircasesFetchMock());
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('loads building context', async () => {
-    renderStaircasesPage();
+  it('renders page header and organization subtitle', async () => {
+    renderGlobalStaircasesPage();
 
     expect(await screen.findByRole('heading', { name: 'Klatki schodowe' })).toBeInTheDocument();
-    expect(await screen.findByText(/Kasprzaka 6/)).toBeInTheDocument();
-    expect(screen.getByText(/KASPRZAKA6/)).toBeInTheDocument();
-    expect(screen.getByText(/ul\. Kasprzaka 6, Dąbrowa Górnicza/)).toBeInTheDocument();
+    expect(screen.getByText('Zarządzanie klatkami schodowymi w organizacji.')).toBeInTheDocument();
   });
 
-  it('loads staircases list', async () => {
-    renderStaircasesPage();
+  it('loads all staircases with building column', async () => {
+    renderGlobalStaircasesPage();
 
-    await waitForStaircaseInTable('KL0003');
-    expect(within(screen.getByRole('table')).getByText('KL0004')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    });
+
+    expect(within(screen.getByRole('table')).getByText('KL0003')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText(/Pusta 64 · PUSTA64/)).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText(/Kasprzaka 6 · KASPRZAKA6/)).toBeInTheDocument();
   });
 
-  it('shows add button when user has BUILDINGS_EDIT permission', async () => {
-    renderStaircasesPage(['BUILDINGS_VIEW', 'BUILDINGS_EDIT']);
+  it('does not show add staircase button', async () => {
+    renderGlobalStaircasesPage(['STAIRCASES_VIEW', 'BUILDINGS_EDIT']);
 
-    expect(await screen.findByRole('button', { name: /Dodaj klatkę/i })).toBeInTheDocument();
-  });
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    });
 
-  it('hides add button when user lacks BUILDINGS_EDIT permission', async () => {
-    renderStaircasesPage(['BUILDINGS_VIEW']);
-
-    await waitForStaircaseInTable('KL0003');
     expect(screen.queryByRole('button', { name: /Dodaj klatkę/i })).not.toBeInTheDocument();
   });
 
-  it('validates create form required fields', async () => {
+  it('filters by building', async () => {
     const user = userEvent.setup();
-    renderStaircasesPage();
+    renderGlobalStaircasesPage();
 
-    await waitForStaircaseInTable('KL0003');
-    await user.click(screen.getByRole('button', { name: /Dodaj klatkę/i }));
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    });
 
-    const dialog = await screen.findByRole('dialog');
-    await user.click(within(dialog).getByRole('button', { name: 'Dodaj klatkę' }));
+    await user.selectOptions(screen.getByLabelText('Filtr budynku'), buildingAId);
 
-    expect(await screen.findByText('Kod klatki jest wymagany.')).toBeInTheDocument();
-    expect(screen.getByText('Oznaczenie jest wymagane.')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).queryByText('KL0003')).not.toBeInTheDocument();
   });
 
-  it('creates staircase successfully', async () => {
+  it('filters by search query across building code', async () => {
     const user = userEvent.setup();
-    renderStaircasesPage();
+    renderGlobalStaircasesPage();
 
-    await waitForStaircaseInTable('KL0003');
-    await user.click(screen.getByRole('button', { name: /Dodaj klatkę/i }));
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    });
 
-    const dialog = await screen.findByRole('dialog');
-    await user.type(within(dialog).getByLabelText('Kod klatki'), 'KL0099');
-    await user.type(within(dialog).getByLabelText('Oznaczenie'), '3');
-    await user.click(within(dialog).getByRole('button', { name: 'Dodaj klatkę' }));
+    await user.type(screen.getByLabelText('Szukaj'), 'PUSTA64');
 
-    expect(await screen.findByText('Klatka została dodana.')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).queryByText('KL0003')).not.toBeInTheDocument();
   });
 
-  it('updates staircase successfully', async () => {
+  it('filters by elevator and key required', async () => {
     const user = userEvent.setup();
-    renderStaircasesPage();
+    renderGlobalStaircasesPage();
 
-    await waitForStaircaseInTable('KL0003');
-    await user.click(screen.getAllByRole('button', { name: 'Edytuj' })[0]);
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    });
 
-    const dialog = await screen.findByRole('dialog');
-    const intercomInput = within(dialog).getByLabelText('Kod domofonu');
-    await user.clear(intercomInput);
-    await user.type(intercomInput, '9999#');
-    await user.click(within(dialog).getByRole('button', { name: 'Zapisz zmiany' }));
+    await user.selectOptions(screen.getByLabelText('Filtr windy'), 'YES');
 
-    expect(await screen.findByText('Klatka została zaktualizowana.')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).queryByText('KL0001')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('KL0003')).toBeInTheDocument();
   });
 
-  it('shows delete confirmation dialog', async () => {
+  it('navigates to building staircases when building is clicked', async () => {
     const user = userEvent.setup();
-    renderStaircasesPage();
+    renderGlobalStaircasesPage();
 
-    await waitForStaircaseInTable('KL0003');
-    await user.click(screen.getAllByRole('button', { name: 'Usuń' })[0]);
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    });
 
-    expect(await screen.findByText('Czy na pewno chcesz usunąć tę klatkę?')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Anuluj' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Pusta 64 · PUSTA64/i }));
+
+    expect(await screen.findByText('Building staircases')).toBeInTheDocument();
   });
 
-  it('deletes staircase successfully', async () => {
+  it('shows empty state when no matches', async () => {
     const user = userEvent.setup();
-    renderStaircasesPage();
+    renderGlobalStaircasesPage();
 
-    await waitForStaircaseInTable('KL0003');
-    await user.click(screen.getAllByRole('button', { name: 'Usuń' })[0]);
+    await waitFor(() => {
+      expect(within(screen.getByRole('table')).getByText('KL0001')).toBeInTheDocument();
+    });
 
-    const dialog = await screen.findByRole('dialog', { name: 'Usuwanie klatki' });
-    await user.click(within(dialog).getByRole('button', { name: 'Usuń' }));
+    await user.type(screen.getByLabelText('Szukaj'), 'brak-wynikow');
 
-    expect(await screen.findByText('Klatka została usunięta.')).toBeInTheDocument();
-  });
-
-  it('renders empty state when no staircases exist', async () => {
-    vi.stubGlobal('fetch', createStaircasesFetchMock({ staircases: [] }));
-
-    renderStaircasesPage();
-
-    expect(await screen.findByText('BRAK KLATEK')).toBeInTheDocument();
-    expect(screen.getByText('Nie znaleziono klatek w tym budynku.')).toBeInTheDocument();
-  });
-
-  it('handles API 404 for building', async () => {
-    vi.stubGlobal('fetch', createStaircasesFetchMock({ building: null, buildingStatus: 404 }));
-
-    renderStaircasesPage();
-
-    expect(await screen.findByText('Budynek nie znaleziony')).toBeInTheDocument();
+    expect(await screen.findByText('BRAK KLATEK SCHODOWYCH')).toBeInTheDocument();
   });
 
   it('handles API 403 with forbidden message', async () => {
-    vi.stubGlobal('fetch', createStaircasesFetchMock({ listStatus: 403 }));
+    vi.stubGlobal('fetch', createGlobalStaircasesFetchMock({ listStatus: 403 }));
 
-    renderStaircasesPage();
+    renderGlobalStaircasesPage();
 
     expect(await screen.findByText('Nie masz uprawnień do tej operacji.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Brak dostępu' })).toBeInTheDocument();
-  });
-
-  it('navigates back to buildings list', async () => {
-    renderStaircasesPage();
-
-    await waitForStaircaseInTable('KL0003');
-    const backLink = screen.getByRole('link', { name: /Wróć do budynku/i });
-    expect(backLink).toHaveAttribute('href', '/buildings');
   });
 });

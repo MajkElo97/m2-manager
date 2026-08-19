@@ -1,24 +1,37 @@
 .staircases-table-wrapper {
   overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
 }
 
 .staircases-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.875rem;
 }
 
 .staircases-table th,
 .staircases-table td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--color-border);
   text-align: left;
-  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
 
 .staircases-table th {
-  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  white-space: nowrap;
+}
+
+.staircases-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.staircases-table tbody tr:hover {
+  background: var(--surface-hover);
 }
 
 .staircases-table__code {
@@ -27,10 +40,25 @@
 
 .staircases-table__actions {
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .staircases-table__empty-cell {
-  color: var(--color-text-muted);
+  color: var(--text-muted);
+}
+
+.staircases-table__building-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.staircases-table__building-link:hover {
+  color: var(--text);
 }

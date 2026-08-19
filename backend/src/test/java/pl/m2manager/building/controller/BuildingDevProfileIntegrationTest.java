@@ -65,6 +65,18 @@ class BuildingDevProfileIntegrationTest {
 				.andExpect(jsonPath("$.length()").value(9));
 	}
 
+	@Test
+	void listAllStaircases_withAdminJwt_inDevProfile_returns200() throws Exception {
+		String token = loginAndExtractToken();
+
+		mockMvc.perform(get("/api/staircases")
+						.header("Authorization", "Bearer " + token))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$.length()").value(12))
+				.andExpect(jsonPath("$[0].code").value("KL0001"));
+	}
+
 	private String loginAndExtractToken() throws Exception {
 		MvcResult result = mockMvc.perform(post("/api/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)

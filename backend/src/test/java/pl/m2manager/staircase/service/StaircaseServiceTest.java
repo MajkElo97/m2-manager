@@ -122,6 +122,18 @@ class StaircaseServiceTest {
 	}
 
 	@Test
+	void getAllForOrganization_returnsOnlyCurrentTenantStaircases() {
+		Building buildingA = saveBuilding(organizationA, "SRV9");
+		Building buildingB = saveBuilding(organizationB, "SRV10");
+		saveStaircase(organizationA.getId(), buildingA.getId(), "KL109", "1");
+		saveStaircase(organizationB.getId(), buildingB.getId(), "KL110", "1");
+
+		assertThat(staircaseService.getAllForOrganization())
+				.extracting(response -> response.code())
+				.containsExactly("KL109");
+	}
+
+	@Test
 	void update_tenantIsolation() {
 		Building buildingB = saveBuilding(organizationB, "SRV7");
 		Staircase staircaseB = saveStaircase(organizationB.getId(), buildingB.getId(), "KL107", "1");
