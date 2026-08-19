@@ -23,4 +23,8 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
 			@Param("roleId") UUID roleId,
 			@Param("organizationId") UUID organizationId
 	);
+
+	long countByIdRoleId(UUID roleId);
+
+	void deleteByIdRoleId(UUID roleId);
 }

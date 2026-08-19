@@ -2,6 +2,7 @@ package pl.m2manager.role.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.m2manager.common.exception.BusinessConflictException;
 import pl.m2manager.common.exception.ResourceNotFoundException;
 import pl.m2manager.permission.dto.PermissionResponse;
 import pl.m2manager.permission.entity.Permission;
@@ -60,6 +61,28 @@ public class RolePermissionService {
 		roleService.requireRoleInCurrentOrganization(roleId);
 		Permission permission = permissionService.findPermissionEntityByCode(permissionCode);
 		rolePermissionRepository.deleteById(new RolePermissionId(roleId, permission.getId()));
+	}
+
+	@Transactional
+	public void replacePermissions(UUID roleId, List<String> permissionCodes) {
+		Role role = roleService.requireRoleInCurrentOrganization(roleId);
+		assertSystemRolePermissionsProtected(role);
+
+		rolePermissionRepository.deleteByIdRoleId(roleId);
+
+		for (String permissionCode : permissionCodes) {
+			Permission permission = permissionService.findPermissionEntityByCode(permissionCode);
+			RolePermissionId id = new RolePermissionId(role.getId(), permission.getId());
+			if (!rolePermissionRepository.existsById(id)) {
+				rolePermissionRepository.save(new RolePermission(role.getId(), permission.getId()));
+			}
+		}
+	}
+
+	private void assertSystemRolePermissionsProtected(Role role) {
+		if (role.isSystemRole()) {
+			throw new BusinessConflictException("Cannot modify permissions of a system role");
+		}
 	}
 
 	public List<PermissionResponse> listPermissions(UUID roleId) {

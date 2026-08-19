@@ -7,13 +7,15 @@ import pl.m2manager.role.entity.Role;
 @Component
 public class RoleMapper {
 
-	public RoleResponse toResponse(Role role) {
+	public RoleResponse toResponse(Role role, long userCount, long permissionCount) {
 		return new RoleResponse(
 				role.getId(),
 				role.getName(),
 				role.getDescription(),
 				role.isSystemRole(),
-				role.isActive()
+				role.isActive(),
+				userCount,
+				permissionCount
 		);
 	}
 }

@@ -1,0 +1,105 @@
+.role-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.role-form__hint {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.role-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.role-form__matrix-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.role-form__matrix-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.role-form__matrix-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.role-form__matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.role-form__matrix th,
+.role-form__matrix td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.role-form__matrix thead th {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  white-space: nowrap;
+}
+
+.role-form__matrix tbody th {
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.role-form__matrix tbody tr:last-child td,
+.role-form__matrix tbody tr:last-child th {
+  border-bottom: 0;
+}
+
+.role-form__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.role-form__matrix-checkbox {
+  display: flex;
+  justify-content: center;
+}
+
+.role-form__matrix-empty {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.role-form__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+.role-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .role-form__grid {
+    grid-template-columns: 1fr;
+  }
+}

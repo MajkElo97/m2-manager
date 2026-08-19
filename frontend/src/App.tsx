@@ -8,6 +8,8 @@ import { BuildingContactsPage } from '@/features/contacts/pages/BuildingContacts
 import { ContactsPage } from '@/features/contacts/pages/ContactsPage';
 import { EmployeesPage } from '@/features/employees/pages/EmployeesPage';
 import { ManagersPage } from '@/features/managers/pages/ManagersPage';
+import { RolesPage } from '@/features/roles/pages/RolesPage';
+import { UsersPage } from '@/features/users/pages/UsersPage';
 import { BuildingScopesPage } from '@/features/scopes/pages/BuildingScopesPage';
 import { ScopesPage } from '@/features/scopes/pages/ScopesPage';
 import { BuildingStaircasesPage } from '@/features/staircases/pages/BuildingStaircasesPage';
@@ -24,6 +26,8 @@ const IMPLEMENTED_ROUTES = new Set([
   '/dashboard',
   '/employees',
   '/managers',
+  '/roles',
+  '/users',
   '/scopes',
   '/staircases',
   '/supervisors',
@@ -44,6 +48,8 @@ export function AppRoutes() {
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/managers" element={<ManagersPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/roles" element={<RolesPage />} />
           <Route path="/scopes" element={<ScopesPage />} />
           <Route path="/staircases" element={<StaircasesPage />} />
           <Route path="/supervisors" element={<SupervisorsPage />} />

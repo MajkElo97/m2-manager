@@ -26,4 +26,13 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
 			@Param("userId") UUID userId,
 			@Param("organizationId") UUID organizationId
 	);
+
+	@Query("""
+			SELECT COUNT(ur) FROM UserRole ur
+			WHERE ur.id.roleId = :roleId AND ur.organizationId = :organizationId
+			""")
+	long countUsersByRoleIdAndOrganizationId(
+			@Param("roleId") UUID roleId,
+			@Param("organizationId") UUID organizationId
+	);
 }

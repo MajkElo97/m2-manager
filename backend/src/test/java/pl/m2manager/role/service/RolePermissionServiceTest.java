@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import pl.m2manager.common.exception.BusinessConflictException;
 import pl.m2manager.common.exception.ResourceNotFoundException;
 import pl.m2manager.organization.entity.Organization;
 import pl.m2manager.organization.repository.OrganizationRepository;
@@ -102,6 +103,16 @@ class RolePermissionServiceTest {
 		assertThat(permissions.getFirst().code()).isEqualTo("BUILDINGS_ADMIN");
 	}
 
+	@Test
+	void replacePermissions_systemRole_rejected() {
+		Role systemRole = saveSystemRole(organizationA, "SYS");
+
+		assertThatThrownBy(() -> rolePermissionService.replacePermissions(
+				systemRole.getId(),
+				List.of("BUILDINGS_VIEW")
+		)).isInstanceOf(BusinessConflictException.class);
+	}
+
 	private Organization saveOrganization(String name) {
 		Organization organization = new Organization();
 		organization.setName(name);
@@ -114,6 +125,12 @@ class RolePermissionServiceTest {
 		Role role = new Role();
 		role.setOrganization(organization);
 		role.setName(name);
+		return roleRepository.saveAndFlush(role);
+	}
+
+	private Role saveSystemRole(Organization organization, String name) {
+		Role role = saveRole(organization, name);
+		role.setSystemRole(true);
 		return roleRepository.saveAndFlush(role);
 	}
 }

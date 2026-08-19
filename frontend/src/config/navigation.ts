@@ -69,8 +69,8 @@ export const appRoutes: AppRoute[] = [
   { path: '/warehouse', moduleName: 'Magazyn', placeholder: true },
   { path: '/fleet', moduleName: 'Flota', placeholder: true },
   { path: '/reports', moduleName: 'Raporty', placeholder: true },
-  { path: '/users', moduleName: 'Użytkownicy', placeholder: true },
-  { path: '/roles', moduleName: 'Role', placeholder: true },
+  { path: '/users', moduleName: 'Użytkownicy' },
+  { path: '/roles', moduleName: 'Role' },
   { path: '/settings', moduleName: 'Ustawienia', placeholder: true },
 ];
 

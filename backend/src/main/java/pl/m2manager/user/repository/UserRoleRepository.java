@@ -25,4 +25,6 @@ public interface UserRoleRepository extends JpaRepository<UserRole, UserRoleId> 
 			@Param("userId") UUID userId,
 			@Param("organizationId") UUID organizationId
 	);
+
+	List<UserRole> findByOrganizationIdAndIdUserId(UUID organizationId, UUID userId);
 }

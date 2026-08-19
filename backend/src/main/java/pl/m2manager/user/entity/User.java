@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import pl.m2manager.common.entity.AuditableEntity;
+import pl.m2manager.employee.entity.Employee;
 import pl.m2manager.organization.entity.Organization;
 
 import java.time.Instant;
@@ -53,6 +54,10 @@ public class User extends AuditableEntity {
 
 	@Column(name = "last_login_at")
 	private Instant lastLoginAt;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "employee_id")
+	private Employee employee;
 
 	public UUID getId() {
 		return id;
@@ -112,5 +117,13 @@ public class User extends AuditableEntity {
 
 	public void setLastLoginAt(Instant lastLoginAt) {
 		this.lastLoginAt = lastLoginAt;
+	}
+
+	public Employee getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
 	}
 }

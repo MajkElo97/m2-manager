@@ -5,8 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.m2manager.common.exception.ResourceNotFoundException;
 import pl.m2manager.role.dto.RoleResponse;
 import pl.m2manager.role.entity.Role;
-import pl.m2manager.role.mapper.RoleMapper;
 import pl.m2manager.role.repository.RoleRepository;
+import pl.m2manager.role.service.RoleService;
 import pl.m2manager.tenant.TenantContext;
 import pl.m2manager.user.entity.User;
 import pl.m2manager.user.entity.UserRole;
@@ -27,20 +27,20 @@ public class UserRoleService {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final UserRoleRepository userRoleRepository;
-	private final RoleMapper roleMapper;
+	private final RoleService roleService;
 	private final TenantContext tenantContext;
 
 	public UserRoleService(
 			UserRepository userRepository,
 			RoleRepository roleRepository,
 			UserRoleRepository userRoleRepository,
-			RoleMapper roleMapper,
+			RoleService roleService,
 			TenantContext tenantContext
 	) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
 		this.userRoleRepository = userRoleRepository;
-		this.roleMapper = roleMapper;
+		this.roleService = roleService;
 		this.tenantContext = tenantContext;
 	}
 
@@ -69,7 +69,7 @@ public class UserRoleService {
 		UUID organizationId = tenantContext.getCurrentOrganizationId();
 		requireUserInCurrentOrganization(userId, organizationId);
 		return roleRepository.findRolesByUserIdAndOrganizationId(userId, organizationId).stream()
-				.map(roleMapper::toResponse)
+				.map(roleService::toResponse)
 				.toList();
 	}
 

@@ -12,6 +12,7 @@ import pl.m2manager.role.dto.RoleResponse;
 import pl.m2manager.role.dto.UpdateRoleRequest;
 import pl.m2manager.role.entity.Role;
 import pl.m2manager.role.mapper.RoleMapper;
+import pl.m2manager.role.repository.RolePermissionRepository;
 import pl.m2manager.role.repository.RoleRepository;
 import pl.m2manager.tenant.TenantContext;
 
@@ -30,30 +31,34 @@ import java.util.UUID;
 public class RoleService {
 
 	private final RoleRepository roleRepository;
+	private final RolePermissionRepository rolePermissionRepository;
 	private final OrganizationRepository organizationRepository;
 	private final TenantContext tenantContext;
 	private final RoleMapper roleMapper;
 
 	public RoleService(
 			RoleRepository roleRepository,
+			RolePermissionRepository rolePermissionRepository,
 			OrganizationRepository organizationRepository,
 			TenantContext tenantContext,
 			RoleMapper roleMapper
 	) {
 		this.roleRepository = roleRepository;
+		this.rolePermissionRepository = rolePermissionRepository;
 		this.organizationRepository = organizationRepository;
 		this.tenantContext = tenantContext;
 		this.roleMapper = roleMapper;
 	}
 
 	public RoleResponse findById(UUID roleId) {
-		return roleMapper.toResponse(requireRoleInCurrentOrganization(roleId));
+		Role role = requireRoleInCurrentOrganization(roleId);
+		return toResponse(role);
 	}
 
 	public List<RoleResponse> listRoles() {
 		UUID organizationId = tenantContext.getCurrentOrganizationId();
 		return roleRepository.findByOrganizationId(organizationId).stream()
-				.map(roleMapper::toResponse)
+				.map(this::toResponse)
 				.toList();
 	}
 
@@ -71,7 +76,7 @@ public class RoleService {
 		role.setDescription(request.description());
 
 		try {
-			return roleMapper.toResponse(roleRepository.saveAndFlush(role));
+			return toResponse(roleRepository.saveAndFlush(role));
 		}
 		catch (DataIntegrityViolationException ex) {
 			throw new BusinessConflictException("Role name already exists in organization");
@@ -100,7 +105,7 @@ public class RoleService {
 		}
 
 		try {
-			return roleMapper.toResponse(roleRepository.save(role));
+			return toResponse(roleRepository.save(role));
 		}
 		catch (DataIntegrityViolationException ex) {
 			throw new BusinessConflictException("Role name already exists in organization");
@@ -112,7 +117,14 @@ public class RoleService {
 		Role role = requireRoleInCurrentOrganization(roleId);
 		assertSystemRoleIdentityProtected(role, "deactivate");
 		role.setActive(false);
-		return roleMapper.toResponse(roleRepository.save(role));
+		return toResponse(roleRepository.save(role));
+	}
+
+	public RoleResponse toResponse(Role role) {
+		UUID organizationId = role.getOrganization().getId();
+		long userCount = roleRepository.countUsersByRoleIdAndOrganizationId(role.getId(), organizationId);
+		long permissionCount = rolePermissionRepository.countByIdRoleId(role.getId());
+		return roleMapper.toResponse(role, userCount, permissionCount);
 	}
 
 	public Role requireRoleInCurrentOrganization(UUID roleId) {
