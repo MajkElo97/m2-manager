@@ -1,0 +1,39 @@
+-- Dev seed: supervisors for local development and tests.
+INSERT INTO supervisors (
+    id,
+    organization_id,
+    manager_id,
+    code,
+    first_name,
+    last_name,
+    phone,
+    email,
+    notes,
+    active
+)
+VALUES
+    (
+        'f1000000-0000-4000-8000-000000000001',
+        'a0000000-0000-4000-8000-000000000001',
+        'f0000000-0000-4000-8000-000000000001',
+        'OP0001',
+        'Magdalena',
+        'Kozera',
+        '509451780',
+        'czynsze@kozeranieruchomosci.pl',
+        NULL,
+        TRUE
+    ),
+    (
+        'f1000000-0000-4000-8000-000000000002',
+        'a0000000-0000-4000-8000-000000000001',
+        'f0000000-0000-4000-8000-000000000002',
+        'OP0002',
+        'Ela',
+        'Kopieniak',
+        '885044565',
+        'elakopieniak.podlesie@gmail.com',
+        NULL,
+        TRUE
+    )
+ON CONFLICT (id) DO NOTHING;

@@ -41,6 +41,7 @@ export function BuildingsPage() {
   const { hasPermission } = usePermissions();
   const canViewStaircases = hasPermission('BUILDINGS_VIEW');
   const canViewScopes = hasPermission('SCOPES_VIEW');
+  const canViewContacts = hasPermission('CONTACTS_VIEW') || hasPermission('BUILDINGS_VIEW');
   const canCreate = hasPermission('BUILDINGS_CREATE');
   const canEdit = hasPermission('BUILDINGS_EDIT');
   const canDelete = hasPermission('BUILDINGS_DELETE');
@@ -80,6 +81,10 @@ export function BuildingsPage() {
 
   const openScopes = (building: Building) => {
     void navigate(`/buildings/${building.id}/scopes`);
+  };
+
+  const openContacts = (building: Building) => {
+    void navigate(`/buildings/${building.id}/contacts`);
   };
 
   const closeFormModal = () => {
@@ -193,10 +198,12 @@ export function BuildingsPage() {
             buildings={buildings}
             canViewStaircases={canViewStaircases}
             canViewScopes={canViewScopes}
+            canViewContacts={canViewContacts}
             canEdit={canEdit}
             canDelete={canDelete}
             onStaircases={openStaircases}
             onScopes={openScopes}
+            onContacts={openContacts}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
           />
@@ -206,10 +213,12 @@ export function BuildingsPage() {
             buildings={buildings}
             canViewStaircases={canViewStaircases}
             canViewScopes={canViewScopes}
+            canViewContacts={canViewContacts}
             canEdit={canEdit}
             canDelete={canDelete}
             onStaircases={openStaircases}
             onScopes={openScopes}
+            onContacts={openContacts}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
           />

@@ -20,9 +20,9 @@ public class BuildingMapper {
 				building.getNip(),
 				building.getPhone(),
 				building.getEmail(),
-				building.getManagerCode(),
-				building.getSupervisorCode(),
-				building.getEmployeeCode(),
+				resolveManagerCode(building),
+				resolveSupervisorCode(building),
+				resolveEmployeeCode(building),
 				building.getContractSignedAt(),
 				building.getServiceStartDate(),
 				building.getNoticePeriodMonths(),
@@ -31,6 +31,27 @@ public class BuildingMapper {
 				building.getCreatedAt(),
 				building.getUpdatedAt()
 		);
+	}
+
+	private String resolveManagerCode(Building building) {
+		if (building.getManager() != null) {
+			return building.getManager().getCode();
+		}
+		return building.getManagerCode();
+	}
+
+	private String resolveSupervisorCode(Building building) {
+		if (building.getSupervisor() != null) {
+			return building.getSupervisor().getCode();
+		}
+		return building.getSupervisorCode();
+	}
+
+	private String resolveEmployeeCode(Building building) {
+		if (building.getEmployee() != null) {
+			return building.getEmployee().getCode();
+		}
+		return building.getEmployeeCode();
 	}
 
 	public void applyCreate(Building building, CreateBuildingRequest request) {

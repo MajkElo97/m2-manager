@@ -8,10 +8,12 @@ interface BuildingsMobileListProps {
   buildings: Building[];
   canViewStaircases: boolean;
   canViewScopes: boolean;
+  canViewContacts: boolean;
   canEdit: boolean;
   canDelete: boolean;
   onStaircases: (building: Building) => void;
   onScopes: (building: Building) => void;
+  onContacts: (building: Building) => void;
   onEdit: (building: Building) => void;
   onDeactivate: (building: Building) => void;
 }
@@ -28,10 +30,12 @@ export function BuildingsMobileList({
   buildings,
   canViewStaircases,
   canViewScopes,
+  canViewContacts,
   canEdit,
   canDelete,
   onStaircases,
   onScopes,
+  onContacts,
   onEdit,
   onDeactivate,
 }: BuildingsMobileListProps) {
@@ -75,6 +79,11 @@ export function BuildingsMobileList({
             {canViewScopes ? (
               <Button variant="secondary" size="sm" onClick={() => onScopes(building)}>
                 Zakresy
+              </Button>
+            ) : null}
+            {canViewContacts ? (
+              <Button variant="secondary" size="sm" onClick={() => onContacts(building)}>
+                Kontakty
               </Button>
             ) : null}
             {canEdit ? (

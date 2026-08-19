@@ -95,6 +95,26 @@ class AuthorizationServiceTest {
 		assertThat(authorizationService.hasModuleAdmin("SCHEDULE")).isFalse();
 	}
 
+	@Test
+	void canListContacts_withBuildingId_requiresBuildingsView() {
+		authenticate();
+		when(effectivePermissionService.resolvePermissionCodes(userId, organizationId))
+				.thenReturn(Set.of("BUILDINGS_VIEW"));
+
+		assertThat(authorizationService.canListContacts(UUID.randomUUID())).isTrue();
+		assertThat(authorizationService.canListContacts(null)).isFalse();
+	}
+
+	@Test
+	void canListContacts_withoutBuildingId_requiresContactsView() {
+		authenticate();
+		when(effectivePermissionService.resolvePermissionCodes(userId, organizationId))
+				.thenReturn(Set.of("CONTACTS_VIEW"));
+
+		assertThat(authorizationService.canListContacts(null)).isTrue();
+		assertThat(authorizationService.canListContacts(UUID.randomUUID())).isFalse();
+	}
+
 	private void authenticate() {
 		JwtAuthenticatedPrincipal principal = new JwtAuthenticatedPrincipal(userId, organizationId, "user@example.com");
 		SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(principal));

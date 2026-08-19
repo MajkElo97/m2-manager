@@ -4,10 +4,15 @@ import { ProtectedRoute, PublicOnlyRoute } from '@/components/routing/ProtectedR
 import { appRoutes } from '@/config/navigation';
 import { ActivitiesPage } from '@/features/activities/pages/ActivitiesPage';
 import { BuildingsPage } from '@/features/buildings/pages/BuildingsPage';
+import { BuildingContactsPage } from '@/features/contacts/pages/BuildingContactsPage';
+import { ContactsPage } from '@/features/contacts/pages/ContactsPage';
+import { EmployeesPage } from '@/features/employees/pages/EmployeesPage';
+import { ManagersPage } from '@/features/managers/pages/ManagersPage';
 import { BuildingScopesPage } from '@/features/scopes/pages/BuildingScopesPage';
 import { ScopesPage } from '@/features/scopes/pages/ScopesPage';
 import { BuildingStaircasesPage } from '@/features/staircases/pages/BuildingStaircasesPage';
 import { StaircasesPage } from '@/features/staircases/pages/StaircasesPage';
+import { SupervisorsPage } from '@/features/supervisors/pages/SupervisorsPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
@@ -15,9 +20,13 @@ import { PlaceholderPage } from '@/pages/PlaceholderPage';
 const IMPLEMENTED_ROUTES = new Set([
   '/activities',
   '/buildings',
+  '/contacts',
   '/dashboard',
+  '/employees',
+  '/managers',
   '/scopes',
   '/staircases',
+  '/supervisors',
 ]);
 
 export function AppRoutes() {
@@ -32,8 +41,13 @@ export function AppRoutes() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/activities" element={<ActivitiesPage />} />
+          <Route path="/contacts" element={<ContactsPage />} />
+          <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/managers" element={<ManagersPage />} />
           <Route path="/scopes" element={<ScopesPage />} />
           <Route path="/staircases" element={<StaircasesPage />} />
+          <Route path="/supervisors" element={<SupervisorsPage />} />
+          <Route path="/buildings/:buildingId/contacts" element={<BuildingContactsPage />} />
           <Route path="/buildings/:buildingId/scopes" element={<BuildingScopesPage />} />
           <Route path="/buildings/:buildingId/staircases" element={<BuildingStaircasesPage />} />
           <Route path="/buildings" element={<BuildingsPage />} />

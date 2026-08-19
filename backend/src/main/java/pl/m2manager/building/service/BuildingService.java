@@ -8,6 +8,12 @@ import pl.m2manager.building.dto.request.UpdateBuildingRequest;
 import pl.m2manager.building.dto.response.BuildingResponse;
 import pl.m2manager.building.entity.Building;
 import pl.m2manager.building.entity.BuildingStatus;
+import pl.m2manager.employee.entity.Employee;
+import pl.m2manager.employee.repository.EmployeeRepository;
+import pl.m2manager.manager.entity.Manager;
+import pl.m2manager.manager.repository.ManagerRepository;
+import pl.m2manager.supervisor.entity.Supervisor;
+import pl.m2manager.supervisor.repository.SupervisorRepository;
 import pl.m2manager.building.mapper.BuildingMapper;
 import pl.m2manager.building.repository.BuildingRepository;
 import pl.m2manager.common.exception.BusinessConflictException;
@@ -26,17 +32,26 @@ public class BuildingService {
 
 	private final BuildingRepository buildingRepository;
 	private final OrganizationRepository organizationRepository;
+	private final ManagerRepository managerRepository;
+	private final SupervisorRepository supervisorRepository;
+	private final EmployeeRepository employeeRepository;
 	private final TenantContext tenantContext;
 	private final BuildingMapper buildingMapper;
 
 	public BuildingService(
 			BuildingRepository buildingRepository,
 			OrganizationRepository organizationRepository,
+			ManagerRepository managerRepository,
+			SupervisorRepository supervisorRepository,
+			EmployeeRepository employeeRepository,
 			TenantContext tenantContext,
 			BuildingMapper buildingMapper
 	) {
 		this.buildingRepository = buildingRepository;
 		this.organizationRepository = organizationRepository;
+		this.managerRepository = managerRepository;
+		this.supervisorRepository = supervisorRepository;
+		this.employeeRepository = employeeRepository;
 		this.tenantContext = tenantContext;
 		this.buildingMapper = buildingMapper;
 	}
@@ -65,6 +80,7 @@ public class BuildingService {
 		Building building = new Building();
 		building.setOrganization(organization);
 		buildingMapper.applyCreate(building, request);
+		applyPersonnelReferences(building, organizationId, request.managerCode(), request.supervisorCode(), request.employeeCode());
 
 		try {
 			return buildingMapper.toResponse(buildingRepository.saveAndFlush(building));
@@ -82,6 +98,7 @@ public class BuildingService {
 		assertValidDateRange(request.contractSignedAt(), request.serviceStartDate());
 
 		buildingMapper.applyUpdate(building, request);
+		applyPersonnelReferences(building, organizationId, request.managerCode(), request.supervisorCode(), request.employeeCode());
 
 		try {
 			return buildingMapper.toResponse(buildingRepository.save(building));
@@ -126,6 +143,65 @@ public class BuildingService {
 			return null;
 		}
 		String trimmed = search.trim();
+		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private void applyPersonnelReferences(
+			Building building,
+			UUID organizationId,
+			String managerCode,
+			String supervisorCode,
+			String employeeCode
+	) {
+		String normalizedManagerCode = normalizeOptionalCode(managerCode);
+		String normalizedSupervisorCode = normalizeOptionalCode(supervisorCode);
+		String normalizedEmployeeCode = normalizeOptionalCode(employeeCode);
+
+		Manager manager = resolveManager(organizationId, normalizedManagerCode);
+		Supervisor supervisor = resolveSupervisor(organizationId, normalizedSupervisorCode);
+		Employee employee = resolveEmployee(organizationId, normalizedEmployeeCode);
+
+		if (supervisor != null && manager != null && !supervisor.getManagerId().equals(manager.getId())) {
+			throw new BusinessConflictException("Supervisor does not belong to the selected manager");
+		}
+
+		building.setManagerCode(normalizedManagerCode);
+		building.setSupervisorCode(normalizedSupervisorCode);
+		building.setEmployeeCode(normalizedEmployeeCode);
+		building.setManager(manager);
+		building.setSupervisor(supervisor);
+		building.setEmployee(employee);
+	}
+
+	private Manager resolveManager(UUID organizationId, String code) {
+		if (code == null) {
+			return null;
+		}
+		return managerRepository.findByOrganizationIdAndCode(organizationId, code)
+				.orElseThrow(() -> new BusinessConflictException("Manager not found in organization"));
+	}
+
+	private Supervisor resolveSupervisor(UUID organizationId, String code) {
+		if (code == null) {
+			return null;
+		}
+		return supervisorRepository.findByOrganizationIdAndCode(organizationId, code)
+				.orElseThrow(() -> new BusinessConflictException("Supervisor not found in organization"));
+	}
+
+	private Employee resolveEmployee(UUID organizationId, String code) {
+		if (code == null) {
+			return null;
+		}
+		return employeeRepository.findByOrganizationIdAndCode(organizationId, code)
+				.orElseThrow(() -> new BusinessConflictException("Employee not found in organization"));
+	}
+
+	private String normalizeOptionalCode(String code) {
+		if (code == null) {
+			return null;
+		}
+		String trimmed = code.trim();
 		return trimmed.isEmpty() ? null : trimmed;
 	}
 }

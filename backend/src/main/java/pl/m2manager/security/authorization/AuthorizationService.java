@@ -60,6 +60,13 @@ public class AuthorizationService {
 		return hasPermission("SCOPES_VIEW");
 	}
 
+	public boolean canListContacts(java.util.UUID buildingId) {
+		if (buildingId != null) {
+			return hasPermission("BUILDINGS_VIEW");
+		}
+		return hasPermission("CONTACTS_VIEW");
+	}
+
 	private Optional<Set<String>> resolveEffectiveCodes() {
 		return getAuthenticatedPrincipal().map(principal -> effectivePermissionService.resolvePermissionCodes(
 				principal.userId(),

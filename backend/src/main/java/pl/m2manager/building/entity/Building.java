@@ -11,6 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import pl.m2manager.employee.entity.Employee;
+import pl.m2manager.manager.entity.Manager;
+import pl.m2manager.supervisor.entity.Supervisor;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -18,7 +21,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import pl.m2manager.common.entity.AuditableEntity;
+import pl.m2manager.employee.entity.Employee;
+import pl.m2manager.manager.entity.Manager;
 import pl.m2manager.organization.entity.Organization;
+import pl.m2manager.supervisor.entity.Supervisor;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -79,6 +85,18 @@ public class Building extends AuditableEntity {
 	@Size(max = 50)
 	@Column(name = "employee_code", length = 50)
 	private String employeeCode;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "manager_id")
+	private Manager manager;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "supervisor_id")
+	private Supervisor supervisor;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "employee_id")
+	private Employee employee;
 
 	@Column(name = "contract_signed_at")
 	private LocalDate contractSignedAt;
@@ -190,6 +208,30 @@ public class Building extends AuditableEntity {
 
 	public void setEmployeeCode(String employeeCode) {
 		this.employeeCode = employeeCode;
+	}
+
+	public Manager getManager() {
+		return manager;
+	}
+
+	public void setManager(Manager manager) {
+		this.manager = manager;
+	}
+
+	public Supervisor getSupervisor() {
+		return supervisor;
+	}
+
+	public void setSupervisor(Supervisor supervisor) {
+		this.supervisor = supervisor;
+	}
+
+	public Employee getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
 	}
 
 	public LocalDate getContractSignedAt() {
