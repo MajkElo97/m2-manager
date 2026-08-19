@@ -1,0 +1,48 @@
+-- Dev seed: synthetic demo vehicle for integration tests (not real business data).
+INSERT INTO vehicles (
+    id,
+    organization_id,
+    code,
+    registration_number,
+    make,
+    model,
+    production_year,
+    vin,
+    vehicle_type,
+    employee_id,
+    status,
+    insurance_start_date,
+    insurance_end_date,
+    insurer,
+    insurance_policy_number,
+    last_inspection_date,
+    next_inspection_date,
+    last_inspection_mileage,
+    purchase_date,
+    current_mileage,
+    notes
+)
+VALUES (
+    'f4000000-0000-4000-8000-000000000001',
+    'a0000000-0000-4000-8000-000000000001',
+    'DEMO-FL-001',
+    'SK DEMO01',
+    'Demo',
+    'Transit',
+    2020,
+    'DEMO0000000000001',
+    'VAN',
+    'f2000000-0000-4000-8000-000000000002',
+    'ACTIVE',
+    '2025-01-01',
+    '2027-03-15',
+    'Demo Insurer',
+    'DEMO-POL-001',
+    '2026-01-10',
+    '2027-02-10',
+    120000,
+    '2020-06-01',
+    124500,
+    'Synthetic dev seed — not real vehicle data'
+)
+ON CONFLICT (id) DO NOTHING;

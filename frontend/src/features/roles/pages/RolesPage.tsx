@@ -212,6 +212,7 @@ export function RolesPage() {
         isOpen={formModal !== null}
         title={formModal?.mode === 'edit' ? 'Edytuj rolę' : 'Dodaj rolę'}
         onClose={closeFormModal}
+        size="xlarge"
       >
         {formModal ? (
           <RoleForm

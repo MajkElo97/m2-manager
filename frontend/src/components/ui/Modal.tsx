@@ -3,14 +3,17 @@ import { X } from 'lucide-react';
 import { Button } from './Button';
 import './Modal.css';
 
+export type ModalSize = 'default' | 'large' | 'xlarge';
+
 interface ModalProps {
   isOpen: boolean;
   title: string;
   children: ReactNode;
   onClose: () => void;
+  size?: ModalSize;
 }
 
-export function Modal({ isOpen, title, children, onClose }: ModalProps) {
+export function Modal({ isOpen, title, children, onClose, size = 'default' }: ModalProps) {
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -33,7 +36,7 @@ export function Modal({ isOpen, title, children, onClose }: ModalProps) {
   return (
     <div className="modal" role="presentation" onClick={onClose}>
       <div
-        className="modal__dialog"
+        className={`modal__dialog modal__dialog--${size}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

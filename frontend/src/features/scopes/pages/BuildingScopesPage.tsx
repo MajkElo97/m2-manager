@@ -276,6 +276,7 @@ export function BuildingScopesPage() {
         isOpen={formModal !== null}
         title={formModal?.mode === 'edit' ? 'Edytuj zakres' : 'Dodaj zakres'}
         onClose={closeFormModal}
+        size="large"
       >
         {formModal && building ? (
           <ScopeForm

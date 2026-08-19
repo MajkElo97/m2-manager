@@ -1,0 +1,37 @@
+CREATE TABLE vehicles (
+    id UUID PRIMARY KEY,
+    organization_id UUID NOT NULL,
+    code VARCHAR(50) NOT NULL,
+    registration_number VARCHAR(20) NOT NULL,
+    make VARCHAR(100) NOT NULL,
+    model VARCHAR(100) NOT NULL,
+    production_year INTEGER,
+    vin VARCHAR(50),
+    vehicle_type VARCHAR(20) NOT NULL,
+    employee_id UUID,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    insurance_start_date DATE,
+    insurance_end_date DATE,
+    insurer VARCHAR(255),
+    insurance_policy_number VARCHAR(100),
+    last_inspection_date DATE,
+    next_inspection_date DATE,
+    last_inspection_mileage INTEGER,
+    purchase_date DATE,
+    current_mileage INTEGER,
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_vehicles_organization FOREIGN KEY (organization_id) REFERENCES organizations (id),
+    CONSTRAINT fk_vehicles_employee FOREIGN KEY (employee_id) REFERENCES employees (id),
+    CONSTRAINT uq_vehicles_organization_code UNIQUE (organization_id, code),
+    CONSTRAINT uq_vehicles_organization_registration UNIQUE (organization_id, registration_number),
+    CONSTRAINT chk_vehicles_status CHECK (status IN ('ACTIVE', 'IN_SERVICE', 'INACTIVE', 'SOLD')),
+    CONSTRAINT chk_vehicles_type CHECK (vehicle_type IN ('PASSENGER', 'DELIVERY', 'VAN', 'OTHER')),
+    CONSTRAINT chk_vehicles_production_year CHECK (production_year IS NULL OR (production_year >= 1900 AND production_year <= 2100)),
+    CONSTRAINT chk_vehicles_mileage CHECK (current_mileage IS NULL OR current_mileage >= 0),
+    CONSTRAINT chk_vehicles_inspection_mileage CHECK (last_inspection_mileage IS NULL OR last_inspection_mileage >= 0)
+);
+
+CREATE INDEX idx_vehicles_organization_status ON vehicles (organization_id, status);
+CREATE INDEX idx_vehicles_employee ON vehicles (employee_id);

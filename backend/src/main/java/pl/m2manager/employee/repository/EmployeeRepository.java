@@ -7,6 +7,7 @@ import pl.m2manager.employee.entity.Employee;
 import pl.m2manager.employee.entity.EmployeeRole;
 import pl.m2manager.employee.entity.EmploymentType;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,5 +42,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
 			@Param("role") EmployeeRole role,
 			@Param("employmentType") EmploymentType employmentType,
 			@Param("active") Boolean active
+	);
+
+	@Query("""
+			SELECT e FROM Employee e
+			WHERE e.organization.id = :organizationId
+			  AND e.id IN :ids
+			""")
+	List<Employee> findAllByIdInAndOrganizationId(
+			@Param("ids") Collection<UUID> ids,
+			@Param("organizationId") UUID organizationId
 	);
 }

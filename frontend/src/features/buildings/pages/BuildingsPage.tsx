@@ -280,6 +280,7 @@ export function BuildingsPage() {
         isOpen={formModal !== null}
         title={formModal?.mode === 'edit' ? 'Edytuj budynek' : 'Dodaj budynek'}
         onClose={closeFormModal}
+        size="large"
       >
         {formModal ? (
           <BuildingForm

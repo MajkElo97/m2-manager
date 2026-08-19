@@ -304,6 +304,7 @@ export function EmployeesPage() {
         isOpen={formModal !== null}
         title={formModal?.mode === 'edit' ? 'Edytuj pracownika' : 'Dodaj pracownika'}
         onClose={closeFormModal}
+        size="large"
       >
         {formModal ? (
           <EmployeeForm

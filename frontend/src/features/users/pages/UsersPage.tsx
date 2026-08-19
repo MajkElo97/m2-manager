@@ -280,6 +280,7 @@ export function UsersPage() {
         isOpen={formModal !== null}
         title={formModal?.mode === 'edit' ? 'Edytuj użytkownika' : 'Dodaj użytkownika'}
         onClose={closeFormModal}
+        size="large"
       >
         {formModal ? (
           <UserForm

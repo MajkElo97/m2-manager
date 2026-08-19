@@ -7,6 +7,8 @@ import { BuildingsPage } from '@/features/buildings/pages/BuildingsPage';
 import { BuildingContactsPage } from '@/features/contacts/pages/BuildingContactsPage';
 import { ContactsPage } from '@/features/contacts/pages/ContactsPage';
 import { EmployeesPage } from '@/features/employees/pages/EmployeesPage';
+import { FleetPage } from '@/features/fleet/pages/FleetPage';
+import { InventoryPage } from '@/features/inventory/pages/InventoryPage';
 import { ManagersPage } from '@/features/managers/pages/ManagersPage';
 import { RolesPage } from '@/features/roles/pages/RolesPage';
 import { UsersPage } from '@/features/users/pages/UsersPage';
@@ -25,6 +27,8 @@ const IMPLEMENTED_ROUTES = new Set([
   '/contacts',
   '/dashboard',
   '/employees',
+  '/fleet',
+  '/inventory',
   '/managers',
   '/roles',
   '/users',
@@ -47,6 +51,8 @@ export function AppRoutes() {
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/fleet" element={<FleetPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/managers" element={<ManagersPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/roles" element={<RolesPage />} />
