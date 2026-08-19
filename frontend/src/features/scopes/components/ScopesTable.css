@@ -1,0 +1,64 @@
+.scopes-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.scopes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.scopes-table th,
+.scopes-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.scopes-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  white-space: nowrap;
+}
+
+.scopes-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.scopes-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.scopes-table__code {
+  font-weight: 600;
+}
+
+.scopes-table__building-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.scopes-table__building-link:hover {
+  color: var(--primary-hover);
+}
+
+.scopes-table__actions {
+  display: flex;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.scopes-table__empty-cell {
+  color: var(--text-muted);
+}

@@ -40,6 +40,7 @@ export function BuildingsPage() {
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
   const canViewStaircases = hasPermission('BUILDINGS_VIEW');
+  const canViewScopes = hasPermission('SCOPES_VIEW');
   const canCreate = hasPermission('BUILDINGS_CREATE');
   const canEdit = hasPermission('BUILDINGS_EDIT');
   const canDelete = hasPermission('BUILDINGS_DELETE');
@@ -75,6 +76,10 @@ export function BuildingsPage() {
 
   const openStaircases = (building: Building) => {
     void navigate(`/buildings/${building.id}/staircases`);
+  };
+
+  const openScopes = (building: Building) => {
+    void navigate(`/buildings/${building.id}/scopes`);
   };
 
   const closeFormModal = () => {
@@ -187,9 +192,11 @@ export function BuildingsPage() {
           <BuildingsTable
             buildings={buildings}
             canViewStaircases={canViewStaircases}
+            canViewScopes={canViewScopes}
             canEdit={canEdit}
             canDelete={canDelete}
             onStaircases={openStaircases}
+            onScopes={openScopes}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
           />
@@ -198,9 +205,11 @@ export function BuildingsPage() {
           <BuildingsMobileList
             buildings={buildings}
             canViewStaircases={canViewStaircases}
+            canViewScopes={canViewScopes}
             canEdit={canEdit}
             canDelete={canDelete}
             onStaircases={openStaircases}
+            onScopes={openScopes}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
           />

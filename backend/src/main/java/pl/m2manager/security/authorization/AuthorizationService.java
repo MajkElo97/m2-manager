@@ -53,6 +53,13 @@ public class AuthorizationService {
 		return hasPermission("STAIRCASES_VIEW");
 	}
 
+	public boolean canListScopes(java.util.UUID buildingId) {
+		if (buildingId != null) {
+			return hasPermission("BUILDINGS_VIEW");
+		}
+		return hasPermission("SCOPES_VIEW");
+	}
+
 	private Optional<Set<String>> resolveEffectiveCodes() {
 		return getAuthenticatedPrincipal().map(principal -> effectivePermissionService.resolvePermissionCodes(
 				principal.userId(),

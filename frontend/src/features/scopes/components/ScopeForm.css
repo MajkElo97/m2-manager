@@ -1,0 +1,88 @@
+.scope-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.scope-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.scope-form__field--full {
+  grid-column: 1 / -1;
+}
+
+.scope-form__select-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.scope-form__select-label span {
+  font-weight: 500;
+}
+
+.scope-form__select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.scope-form__select:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.scope-form__textarea-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.scope-form__textarea-label span {
+  font-weight: 500;
+}
+
+.scope-form__textarea {
+  width: 100%;
+  min-height: 5rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.scope-form__textarea:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.scope-form__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+.scope-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .scope-form__grid {
+    grid-template-columns: 1fr;
+  }
+}

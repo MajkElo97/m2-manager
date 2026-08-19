@@ -7,9 +7,11 @@ import './BuildingsTable.css';
 interface BuildingsTableProps {
   buildings: Building[];
   canViewStaircases: boolean;
+  canViewScopes: boolean;
   canEdit: boolean;
   canDelete: boolean;
   onStaircases: (building: Building) => void;
+  onScopes: (building: Building) => void;
   onEdit: (building: Building) => void;
   onDeactivate: (building: Building) => void;
 }
@@ -25,9 +27,11 @@ function statusVariant(status: Building['status']): 'success' | 'neutral' {
 export function BuildingsTable({
   buildings,
   canViewStaircases,
+  canViewScopes,
   canEdit,
   canDelete,
   onStaircases,
+  onScopes,
   onEdit,
   onDeactivate,
 }: BuildingsTableProps) {
@@ -73,6 +77,11 @@ export function BuildingsTable({
                       Klatki
                     </Button>
                   ) : null}
+                  {canViewScopes ? (
+                    <Button variant="secondary" size="sm" onClick={() => onScopes(building)}>
+                      Zakresy
+                    </Button>
+                  ) : null}
                   {canEdit ? (
                     <Button variant="secondary" size="sm" onClick={() => onEdit(building)}>
                       Edytuj
@@ -83,7 +92,7 @@ export function BuildingsTable({
                       Dezaktywuj
                     </Button>
                   ) : null}
-                  {!canViewStaircases && !canEdit && !canDelete ? (
+                  {!canViewStaircases && !canViewScopes && !canEdit && !canDelete ? (
                     <span className="buildings-table__empty-cell">—</span>
                   ) : null}
                 </div>
