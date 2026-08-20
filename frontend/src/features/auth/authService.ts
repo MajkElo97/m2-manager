@@ -1,6 +1,6 @@
 import type { AuthenticationResponse, AuthContextResponse, LoginRequest } from '@/features/auth/authTypes';
 import { tokenStore } from '@/features/auth/tokenStore';
-import { apiClient } from '@/services/apiClient';
+import { apiClient, awaitPendingRefresh } from '@/services/apiClient';
 import { ensureCsrfCookie } from '@/services/csrf';
 import { ApiError, parseApiError } from '@/services/apiError';
 
@@ -54,12 +54,13 @@ export const authService = {
     tokenStore.clear();
   },
 
-  async getContext(): Promise<AuthContextResponse> {
-    return apiClient.get<AuthContextResponse>('/api/auth/context');
+  async getContext(accessToken?: string): Promise<AuthContextResponse> {
+    return apiClient.get<AuthContextResponse>('/api/auth/context', { accessToken });
   },
 
   async switchOrganization(organizationId: string): Promise<AuthenticationResponse> {
     await ensureCsrfCookie();
+    await awaitPendingRefresh();
     const response = await apiClient.post<AuthenticationResponse>('/api/auth/context/organization', {
       organizationId,
     });

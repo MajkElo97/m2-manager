@@ -41,8 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     organizationContextKey: null,
   });
 
-  const loadAuthContext = useCallback(async (): Promise<AuthContextResponse> => {
-    return authService.getContext();
+  const loadAuthContext = useCallback(async (accessToken?: string): Promise<AuthContextResponse> => {
+    return authService.getContext(accessToken);
   }, []);
 
   const establishSession = useCallback(
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       tokenStore.set(accessToken);
-      const context = await loadAuthContext();
+      const context = await loadAuthContext(accessToken);
 
       setState({
         status: 'authenticated',

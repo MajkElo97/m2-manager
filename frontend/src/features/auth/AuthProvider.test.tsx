@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { AuthProvider } from '@/features/auth/AuthProvider';
+import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { PermissionProvider } from '@/features/permissions/PermissionProvider';
 import { ThemeProvider } from '@/hooks/ThemeProvider';
 import { PublicOnlyRoute, ProtectedRoute } from '@/components/routing/ProtectedRoute';
@@ -106,6 +106,114 @@ describe('AuthProvider login flow', () => {
     expect(await screen.findByText('Dashboard content')).toBeInTheDocument();
     await waitFor(() => {
       expect(refreshCalls).toBe(1);
+    });
+
+    vi.unstubAllGlobals();
+  });
+
+  it('switchOrganization updates active organization context', async () => {
+    const orgAToken = createMockJwt({
+      sub: 'user-1',
+      organization_id: 'org-a',
+      email: 'user@example.com',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    });
+    const orgBToken = createMockJwt({
+      sub: 'user-1',
+      organization_id: 'org-b',
+      email: 'user@example.com',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    });
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+
+        if (url.includes('/actuator/health')) {
+          return new Response(null, { status: 200 });
+        }
+
+        if (url.includes('/api/auth/refresh')) {
+          return Response.json({
+            accessToken: orgAToken,
+            tokenType: 'Bearer',
+            expiresIn: 900,
+          });
+        }
+
+        if (url.includes('/api/auth/context/organization') && init?.method === 'POST') {
+          return Response.json({
+            accessToken: orgBToken,
+            tokenType: 'Bearer',
+            expiresIn: 900,
+          });
+        }
+
+        if (url.includes('/api/auth/context')) {
+          const authHeader = init?.headers instanceof Headers
+            ? init.headers.get('Authorization')
+            : (init?.headers as Record<string, string> | undefined)?.Authorization;
+
+          const activeOrganizationId = authHeader?.includes(orgBToken) ? 'org-b' : 'org-a';
+
+          return Response.json({
+            user: {
+              id: 'user-1',
+              name: 'User Example',
+              email: 'user@example.com',
+            },
+            activeOrganization: {
+              id: activeOrganizationId,
+              name: activeOrganizationId === 'org-b' ? 'Org B' : 'Org A',
+              slug: activeOrganizationId === 'org-b' ? 'org-b' : 'org-a',
+            },
+            availableOrganizations: [
+              { id: 'org-a', name: 'Org A', slug: 'org-a' },
+              { id: 'org-b', name: 'Org B', slug: 'org-b' },
+            ],
+            canSwitchOrganizations: true,
+          });
+        }
+
+        if (url.includes('/api/auth/permissions')) {
+          return Response.json({ permissions: ['BUILDINGS_VIEW'] });
+        }
+
+        return new Response(null, { status: 404 });
+      }),
+    );
+
+    function SwitchProbe() {
+      const { context, switchOrganization } = useAuth();
+      return (
+        <div>
+          <span data-testid="active-org">{context?.activeOrganization.name ?? 'none'}</span>
+          <button type="button" onClick={() => void switchOrganization('org-b')}>
+            Switch org
+          </button>
+        </div>
+      );
+    }
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <ThemeProvider>
+          <PermissionProvider>
+            <AuthProvider>
+              <SwitchProbe />
+            </AuthProvider>
+          </PermissionProvider>
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByTestId('active-org')).toHaveTextContent('Org A');
+    await user.click(screen.getByRole('button', { name: 'Switch org' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('active-org')).toHaveTextContent('Org B');
     });
 
     vi.unstubAllGlobals();

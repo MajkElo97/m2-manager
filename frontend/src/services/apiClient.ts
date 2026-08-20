@@ -10,6 +10,7 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   skipAuth?: boolean;
   skipRefresh?: boolean;
+  accessToken?: string;
 }
 
 type SessionExpiredListener = () => void;
@@ -43,7 +44,7 @@ function buildHeaders(options: RequestOptions, method: HttpMethod): Headers {
   }
 
   if (!options.skipAuth) {
-    const token = tokenStore.get();
+    const token = options.accessToken ?? tokenStore.get();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
@@ -99,6 +100,16 @@ async function refreshAccessToken(): Promise<string> {
   return refreshInFlight;
 }
 
+export async function awaitPendingRefresh(): Promise<void> {
+  if (refreshInFlight) {
+    try {
+      await refreshInFlight;
+    } catch {
+      // Ignore — callers handle auth failures from their own requests.
+    }
+  }
+}
+
 async function request<T>(
   method: HttpMethod,
   path: string,
@@ -149,6 +160,7 @@ export const apiClient = {
     return request<T>('DELETE', path, options);
   },
   refreshAccessToken,
+  awaitPendingRefresh,
   notifySessionExpired,
 };
 

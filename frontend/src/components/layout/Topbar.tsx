@@ -21,7 +21,8 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
   const displayName = context?.user.name ?? context?.user.email ?? 'Użytkownik';
   const displayEmail = context?.user.email ?? '';
   const activeOrganization = context?.activeOrganization;
-  const canSwitch = context?.canSwitchOrganizations ?? false;
+  const availableOrganizations = context?.availableOrganizations ?? [];
+  const canSwitch = (context?.canSwitchOrganizations ?? false) && availableOrganizations.length > 1;
 
   async function handleOrganizationChange(nextOrganizationId: string) {
     if (!activeOrganization || nextOrganizationId === activeOrganization.id || isSwitching) {
@@ -31,6 +32,8 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
     setIsSwitching(true);
     try {
       await switchOrganization(nextOrganizationId);
+    } catch (error) {
+      console.error('Organization switch failed', error);
     } finally {
       setIsSwitching(false);
     }
@@ -50,40 +53,45 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
         </div>
       </div>
 
+      <div className="topbar__spacer" aria-hidden="true" />
+
       <div className="topbar__right">
-        <div className="topbar__user" aria-label="Obszar użytkownika">
-          <UserCircle2 size={18} aria-hidden="true" />
-          <div className="topbar__user-details">
-            <span className="topbar__user-name">{displayName}</span>
-            {displayEmail ? <span className="topbar__user-email">{displayEmail}</span> : null}
-            {activeOrganization ? (
-              <div className="topbar__organization">
-                <span className="topbar__organization-label">Organizacja</span>
-                {canSwitch ? (
-                  <select
-                    className="topbar__organization-select"
-                    aria-label="Wybierz organizację"
-                    value={activeOrganization.id}
-                    disabled={isSwitching}
-                    onChange={(event) => void handleOrganizationChange(event.target.value)}
-                  >
-                    {context?.availableOrganizations.map((organization) => (
-                      <option key={organization.id} value={organization.id}>
-                        {organization.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="topbar__organization-name">{activeOrganization.name}</span>
-                )}
-              </div>
-            ) : null}
+        {activeOrganization ? (
+          <div className="topbar__organization">
+            <span className="topbar__organization-label">Organizacja:</span>
+            {canSwitch ? (
+              <select
+                className="topbar__organization-select"
+                aria-label="Wybierz organizację"
+                value={activeOrganization.id}
+                disabled={isSwitching}
+                onChange={(event) => void handleOrganizationChange(event.target.value)}
+              >
+                {availableOrganizations.map((organization) => (
+                  <option key={organization.id} value={organization.id}>
+                    {organization.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="topbar__organization-value">{activeOrganization.name}</span>
+            )}
           </div>
-        </div>
+        ) : null}
 
         <Button variant="ghost" size="sm" aria-label={themeLabel} onClick={toggleTheme}>
           {preference === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </Button>
+
+        <div className="topbar__profile" aria-label="Obszar użytkownika">
+          <span className="topbar__avatar" aria-hidden="true">
+            <UserCircle2 size={20} />
+          </span>
+          <div className="topbar__profile-text">
+            <span className="topbar__user-name">{displayName}</span>
+            {displayEmail ? <span className="topbar__user-email">{displayEmail}</span> : null}
+          </div>
+        </div>
 
         <Button variant="secondary" size="sm" onClick={() => void logout()}>
           <LogOut size={16} aria-hidden="true" />
