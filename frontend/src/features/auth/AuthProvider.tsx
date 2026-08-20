@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from './authService';
-import type { AuthState, AuthUser, LoginRequest } from './authTypes';
+import type { AuthContextResponse, AuthState, AuthUser, LoginRequest } from './authTypes';
 import { tokenStore } from './tokenStore';
 import { decodeAccessToken } from '@/utils/jwt';
 import { onSessionExpired } from '@/services/apiClient';
@@ -20,9 +20,12 @@ import { usePermissions } from '@/features/permissions/PermissionProvider';
 interface AuthContextValue extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
+  switchOrganization: (organizationId: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export type { AuthContextValue };
+
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
@@ -34,7 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     status: 'initializing',
     user: null,
     accessToken: null,
+    context: null,
+    organizationContextKey: null,
   });
+
+  const loadAuthContext = useCallback(async (): Promise<AuthContextResponse> => {
+    return authService.getContext();
+  }, []);
 
   const establishSession = useCallback(
     async (accessToken: string) => {
@@ -44,14 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       tokenStore.set(accessToken);
+      const context = await loadAuthContext();
+
       setState({
         status: 'authenticated',
         user,
         accessToken,
+        context,
+        organizationContextKey: context.activeOrganization.id,
       });
       await loadPermissions();
     },
-    [loadPermissions],
+    [loadAuthContext, loadPermissions],
   );
 
   const clearSession = useCallback(() => {
@@ -61,6 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       status: 'unauthenticated',
       user: null,
       accessToken: null,
+      context: null,
+      organizationContextKey: null,
     });
   }, [clearPermissions]);
 
@@ -121,13 +136,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [clearSession, navigate]);
 
+  const switchOrganization = useCallback(
+    async (organizationId: string) => {
+      const response = await authService.switchOrganization(organizationId);
+      await establishSession(response.accessToken);
+    },
+    [establishSession],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
       login,
       logout,
+      switchOrganization,
     }),
-    [state, login, logout],
+    [state, login, logout, switchOrganization],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

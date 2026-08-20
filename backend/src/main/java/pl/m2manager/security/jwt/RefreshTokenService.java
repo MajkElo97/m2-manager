@@ -2,6 +2,7 @@ package pl.m2manager.security.jwt;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.m2manager.security.auth.OrganizationAccessService;
 import pl.m2manager.security.auth.dto.AuthenticationResult;
 import pl.m2manager.user.entity.User;
 import pl.m2manager.user.repository.UserRepository;
@@ -20,6 +21,7 @@ public class RefreshTokenService {
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final RefreshTokenHasher refreshTokenHasher;
 	private final UserRepository userRepository;
+	private final OrganizationAccessService organizationAccessService;
 	private final JwtProperties jwtProperties;
 	private final Clock clock;
 	private final SecureRandom secureRandom;
@@ -28,12 +30,14 @@ public class RefreshTokenService {
 			RefreshTokenRepository refreshTokenRepository,
 			RefreshTokenHasher refreshTokenHasher,
 			UserRepository userRepository,
+			OrganizationAccessService organizationAccessService,
 			JwtProperties jwtProperties,
 			Clock clock
 	) {
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.refreshTokenHasher = refreshTokenHasher;
 		this.userRepository = userRepository;
+		this.organizationAccessService = organizationAccessService;
 		this.jwtProperties = jwtProperties;
 		this.clock = clock;
 		this.secureRandom = new SecureRandom();
@@ -65,10 +69,14 @@ public class RefreshTokenService {
 			throw new InvalidRefreshTokenException();
 		}
 
-		User user = userRepository.findByIdAndOrganizationId(token.getUserId(), token.getOrganizationId())
+		User user = userRepository.findById(token.getUserId())
 				.orElseThrow(InvalidRefreshTokenException::new);
 
 		if (!user.isActive()) {
+			throw new InvalidRefreshTokenException();
+		}
+
+		if (!organizationAccessService.canAccessOrganization(user.getId(), token.getOrganizationId())) {
 			throw new InvalidRefreshTokenException();
 		}
 

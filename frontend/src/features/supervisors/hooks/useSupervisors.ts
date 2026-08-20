@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getSupervisors } from '@/features/supervisors/api/supervisorsApi';
 import { getSupervisorErrorMessage } from '@/features/supervisors/supervisorsMessages';
 import type { Supervisor, SupervisorListParams } from '@/features/supervisors/types/supervisor';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseSupervisorsResult {
@@ -14,6 +15,7 @@ interface UseSupervisorsResult {
 }
 
 export function useSupervisors(params: SupervisorListParams): UseSupervisorsResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useSupervisors(params: SupervisorListParams): UseSupervisorsResu
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.managerId, params.active]);
+  }, [params.search, params.managerId, params.active, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getContacts } from '@/features/contacts/api/contactsApi';
 import { getContactErrorMessage } from '@/features/contacts/contactsMessages';
 import type { Contact, ContactListParams } from '@/features/contacts/types/contact';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseContactsResult {
@@ -14,6 +15,7 @@ interface UseContactsResult {
 }
 
 export function useContacts(params: ContactListParams = {}): UseContactsResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useContacts(params: ContactListParams = {}): UseContactsResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.buildingId]);
+  }, [params.buildingId, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

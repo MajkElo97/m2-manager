@@ -4,16 +4,20 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
+import pl.m2manager.organization.repository.OrganizationRepository;
 import pl.m2manager.security.auth.dto.AuthenticationResponse;
 import pl.m2manager.security.auth.dto.AuthenticationResult;
 import pl.m2manager.security.jwt.IssuedRefreshToken;
+import pl.m2manager.security.jwt.JwtAuthenticatedPrincipal;
 import pl.m2manager.security.jwt.JwtService;
 import pl.m2manager.security.jwt.RefreshRotationResult;
 import pl.m2manager.security.jwt.RefreshTokenCookieProperties;
 import pl.m2manager.security.jwt.RefreshTokenCookieService;
 import pl.m2manager.security.jwt.RefreshTokenService;
+import pl.m2manager.user.repository.UserRepository;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 @Service
 public class AuthSessionService {
@@ -23,19 +27,28 @@ public class AuthSessionService {
 	private final RefreshTokenService refreshTokenService;
 	private final RefreshTokenCookieService refreshTokenCookieService;
 	private final RefreshTokenCookieProperties cookieProperties;
+	private final OrganizationAccessService organizationAccessService;
+	private final OrganizationRepository organizationRepository;
+	private final UserRepository userRepository;
 
 	public AuthSessionService(
 			AuthenticationService authenticationService,
 			JwtService jwtService,
 			RefreshTokenService refreshTokenService,
 			RefreshTokenCookieService refreshTokenCookieService,
-			RefreshTokenCookieProperties cookieProperties
+			RefreshTokenCookieProperties cookieProperties,
+			OrganizationAccessService organizationAccessService,
+			OrganizationRepository organizationRepository,
+			UserRepository userRepository
 	) {
 		this.authenticationService = authenticationService;
 		this.jwtService = jwtService;
 		this.refreshTokenService = refreshTokenService;
 		this.refreshTokenCookieService = refreshTokenCookieService;
 		this.cookieProperties = cookieProperties;
+		this.organizationAccessService = organizationAccessService;
+		this.organizationRepository = organizationRepository;
+		this.userRepository = userRepository;
 	}
 
 	public AuthenticationResponse login(
@@ -63,6 +76,32 @@ public class AuthSessionService {
 	public void logout(HttpServletRequest request, HttpServletResponse response) {
 		refreshTokenService.revoke(extractRefreshToken(request));
 		refreshTokenCookieService.clearRefreshTokenCookie(response);
+	}
+
+	public AuthenticationResponse switchOrganization(
+			JwtAuthenticatedPrincipal principal,
+			UUID organizationId,
+			HttpServletRequest request,
+			HttpServletResponse response
+	) {
+		if (organizationRepository.findById(organizationId).isEmpty()) {
+			throw new ResourceNotFoundException("Organization not found");
+		}
+
+		organizationAccessService.requireOrganizationAccess(principal.userId(), organizationId);
+
+		var user = userRepository.findById(principal.userId())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+		if (!user.isActive()) {
+			throw new ResourceNotFoundException("User not found");
+		}
+
+		refreshTokenService.revoke(extractRefreshToken(request));
+		IssuedRefreshToken refreshToken = refreshTokenService.issueNewFamily(user.getId(), organizationId);
+		refreshTokenCookieService.setRefreshTokenCookie(response, refreshToken.rawToken());
+
+		return buildAccessTokenResponse(new AuthenticationResult(user.getId(), organizationId, user.getEmail()));
 	}
 
 	private AuthenticationResponse buildAccessTokenResponse(AuthenticationResult result) {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getRoles } from '@/features/roles/api/rolesApi';
 import { getRoleErrorMessage } from '@/features/roles/rolesMessages';
 import type { Role } from '@/features/roles/types/role';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseRolesResult {
@@ -14,6 +15,7 @@ interface UseRolesResult {
 }
 
 export function useRoles(): UseRolesResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useRoles(): UseRolesResult {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [organizationContextKey]);
 
   useEffect(() => {
     void refetch();

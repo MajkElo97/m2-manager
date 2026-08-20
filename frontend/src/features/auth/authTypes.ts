@@ -4,6 +4,25 @@ export interface AuthUser {
   email: string;
 }
 
+export interface OrganizationSummary {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface AuthContextUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AuthContextResponse {
+  user: AuthContextUser;
+  activeOrganization: OrganizationSummary;
+  availableOrganizations: OrganizationSummary[];
+  canSwitchOrganizations: boolean;
+}
+
 export interface LoginRequest {
   organizationSlug: string;
   email: string;
@@ -22,4 +41,6 @@ export interface AuthState {
   status: AuthStatus;
   user: AuthUser | null;
   accessToken: string | null;
+  context: AuthContextResponse | null;
+  organizationContextKey: string | null;
 }

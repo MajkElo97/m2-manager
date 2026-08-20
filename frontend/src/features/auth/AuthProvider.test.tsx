@@ -68,6 +68,29 @@ describe('AuthProvider login flow', () => {
           return new Response(null, { status: 404 });
         }
 
+        if (url.includes('/api/auth/context')) {
+          return Response.json({
+            user: {
+              id: 'user-1',
+              name: 'user@example.com',
+              email: 'user@example.com',
+            },
+            activeOrganization: {
+              id: 'org-1',
+              name: 'Test Org',
+              slug: 'test-org',
+            },
+            availableOrganizations: [
+              {
+                id: 'org-1',
+                name: 'Test Org',
+                slug: 'test-org',
+              },
+            ],
+            canSwitchOrganizations: false,
+          });
+        }
+
         return new Response(null, { status: 404 });
       }),
     );

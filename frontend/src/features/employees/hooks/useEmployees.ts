@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getEmployees } from '@/features/employees/api/employeesApi';
 import { getEmployeeErrorMessage } from '@/features/employees/employeesMessages';
 import type { Employee, EmployeeListParams } from '@/features/employees/types/employee';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseEmployeesResult {
@@ -14,6 +15,7 @@ interface UseEmployeesResult {
 }
 
 export function useEmployees(params: EmployeeListParams): UseEmployeesResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useEmployees(params: EmployeeListParams): UseEmployeesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.position, params.role, params.employmentType, params.active]);
+  }, [params.search, params.position, params.role, params.employmentType, params.active, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

@@ -2,6 +2,7 @@ package pl.m2manager.security.authorization;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.m2manager.permission.repository.PermissionRepository;
 import pl.m2manager.user.repository.UserRoleRepository;
 
 import java.util.HashSet;
@@ -19,12 +20,23 @@ import java.util.UUID;
 public class EffectivePermissionService {
 
 	private final UserRoleRepository userRoleRepository;
+	private final PermissionRepository permissionRepository;
+	private final pl.m2manager.security.auth.OrganizationAccessService organizationAccessService;
 
-	public EffectivePermissionService(UserRoleRepository userRoleRepository) {
+	public EffectivePermissionService(
+			UserRoleRepository userRoleRepository,
+			PermissionRepository permissionRepository,
+			pl.m2manager.security.auth.OrganizationAccessService organizationAccessService
+	) {
 		this.userRoleRepository = userRoleRepository;
+		this.permissionRepository = permissionRepository;
+		this.organizationAccessService = organizationAccessService;
 	}
 
 	public Set<String> resolvePermissionCodes(UUID userId, UUID organizationId) {
+		if (organizationAccessService.isSuperAdmin(userId)) {
+			return new HashSet<>(permissionRepository.findAllPermissionCodes());
+		}
 		return new HashSet<>(userRoleRepository.findEffectivePermissionCodesByUserIdAndOrganizationId(
 				userId,
 				organizationId

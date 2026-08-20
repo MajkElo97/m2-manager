@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getBuildings } from '@/features/buildings/api/buildingsApi';
 import { getBuildingErrorMessage } from '@/features/buildings/buildingsMessages';
 import type { Building, BuildingListParams } from '@/features/buildings/types/building';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseBuildingsResult {
@@ -14,6 +15,7 @@ interface UseBuildingsResult {
 }
 
 export function useBuildings(params: BuildingListParams): UseBuildingsResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useBuildings(params: BuildingListParams): UseBuildingsResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.status, params.search]);
+  }, [params.status, params.search, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

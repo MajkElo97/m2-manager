@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getVehicles } from '@/features/fleet/api/fleetApi';
 import { getFleetErrorMessage } from '@/features/fleet/fleetMessages';
 import type { Vehicle, VehicleListParams } from '@/features/fleet/types/vehicle';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseFleetResult {
@@ -14,6 +15,7 @@ interface UseFleetResult {
 }
 
 export function useFleet(params: VehicleListParams): UseFleetResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useFleet(params: VehicleListParams): UseFleetResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.status, params.employeeId, params.vehicleType]);
+  }, [params.search, params.status, params.employeeId, params.vehicleType, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

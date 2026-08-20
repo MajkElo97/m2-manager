@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getEquipment } from '@/features/inventory/api/equipmentApi';
 import { getInventoryErrorMessage } from '@/features/inventory/inventoryMessages';
 import type { Equipment, EquipmentListParams } from '@/features/inventory/types/equipment';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseEquipmentResult {
@@ -14,6 +15,7 @@ interface UseEquipmentResult {
 }
 
 export function useEquipment(params: EquipmentListParams): UseEquipmentResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useEquipment(params: EquipmentListParams): UseEquipmentResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.category, params.employeeId, params.condition, params.active]);
+  }, [params.search, params.category, params.employeeId, params.condition, params.active, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getStaircases } from '@/features/staircases/api/staircasesApi';
 import { getStaircaseErrorMessage } from '@/features/staircases/staircasesMessages';
 import type { Staircase } from '@/features/staircases/types/staircase';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseStaircasesResult {
@@ -14,6 +15,7 @@ interface UseStaircasesResult {
 }
 
 export function useStaircases(buildingId?: string): UseStaircasesResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [staircases, setStaircases] = useState<Staircase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export function useStaircases(buildingId?: string): UseStaircasesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [buildingId]);
+  }, [buildingId, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

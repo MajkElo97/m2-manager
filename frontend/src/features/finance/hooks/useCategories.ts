@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getCategories } from '@/features/finance/api/financeApi';
 import { getFinanceErrorMessage } from '@/features/finance/financeMessages';
 import type { CategoryListParams, FinancialCategory } from '@/features/finance/types/category';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseCategoriesResult {
@@ -14,6 +15,7 @@ interface UseCategoriesResult {
 }
 
 export function useCategories(params: CategoryListParams): UseCategoriesResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [categories, setCategories] = useState<FinancialCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useCategories(params: CategoryListParams): UseCategoriesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.type, params.active]);
+  }, [params.search, params.type, params.active, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

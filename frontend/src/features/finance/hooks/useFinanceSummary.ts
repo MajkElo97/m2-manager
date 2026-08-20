@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getFinanceSummary } from '@/features/finance/api/financeApi';
 import { getFinanceErrorMessage } from '@/features/finance/financeMessages';
 import type { FinanceSummary, FinanceSummaryParams } from '@/features/finance/types/summary';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseFinanceSummaryResult {
@@ -14,6 +15,7 @@ interface UseFinanceSummaryResult {
 }
 
 export function useFinanceSummary(params: FinanceSummaryParams): UseFinanceSummaryResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useFinanceSummary(params: FinanceSummaryParams): UseFinanceSumma
     } finally {
       setIsLoading(false);
     }
-  }, [params.dateFrom, params.dateTo]);
+  }, [params.dateFrom, params.dateTo, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

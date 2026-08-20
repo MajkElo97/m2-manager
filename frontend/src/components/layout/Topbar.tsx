@@ -1,4 +1,5 @@
 import { LogOut, Menu, Moon, Sun, UserCircle2 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useTheme } from '@/hooks/ThemeProvider';
@@ -10,11 +11,30 @@ interface TopbarProps {
 }
 
 export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
-  const { user, logout } = useAuth();
+  const { context, logout, switchOrganization } = useAuth();
   const { preference, toggleTheme } = useTheme();
+  const [isSwitching, setIsSwitching] = useState(false);
 
   const themeLabel =
     preference === 'dark' ? 'Przełącz na jasny motyw' : 'Przełącz na ciemny motyw';
+
+  const displayName = context?.user.name ?? context?.user.email ?? 'Użytkownik';
+  const displayEmail = context?.user.email ?? '';
+  const activeOrganization = context?.activeOrganization;
+  const canSwitch = context?.canSwitchOrganizations ?? false;
+
+  async function handleOrganizationChange(nextOrganizationId: string) {
+    if (!activeOrganization || nextOrganizationId === activeOrganization.id || isSwitching) {
+      return;
+    }
+
+    setIsSwitching(true);
+    try {
+      await switchOrganization(nextOrganizationId);
+    } finally {
+      setIsSwitching(false);
+    }
+  }
 
   return (
     <header className="topbar">
@@ -33,7 +53,32 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
       <div className="topbar__right">
         <div className="topbar__user" aria-label="Obszar użytkownika">
           <UserCircle2 size={18} aria-hidden="true" />
-          <span className="topbar__user-email">{user?.email ?? 'Użytkownik'}</span>
+          <div className="topbar__user-details">
+            <span className="topbar__user-name">{displayName}</span>
+            {displayEmail ? <span className="topbar__user-email">{displayEmail}</span> : null}
+            {activeOrganization ? (
+              <div className="topbar__organization">
+                <span className="topbar__organization-label">Organizacja</span>
+                {canSwitch ? (
+                  <select
+                    className="topbar__organization-select"
+                    aria-label="Wybierz organizację"
+                    value={activeOrganization.id}
+                    disabled={isSwitching}
+                    onChange={(event) => void handleOrganizationChange(event.target.value)}
+                  >
+                    {context?.availableOrganizations.map((organization) => (
+                      <option key={organization.id} value={organization.id}>
+                        {organization.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="topbar__organization-name">{activeOrganization.name}</span>
+                )}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <Button variant="ghost" size="sm" aria-label={themeLabel} onClick={toggleTheme}>

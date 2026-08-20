@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getUsers } from '@/features/users/api/usersApi';
 import { getUserErrorMessage } from '@/features/users/usersMessages';
 import type { User, UserListParams } from '@/features/users/types/user';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseUsersResult {
@@ -14,6 +15,7 @@ interface UseUsersResult {
 }
 
 export function useUsers(params: UserListParams): UseUsersResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useUsers(params: UserListParams): UseUsersResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.active, params.roleId]);
+  }, [params.search, params.active, params.roleId, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

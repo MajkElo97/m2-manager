@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getActivities } from '@/features/activities/api/activitiesApi';
 import { getActivityErrorMessage } from '@/features/activities/activitiesMessages';
 import type { Activity, ActivityListParams } from '@/features/activities/types/activity';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseActivitiesResult {
@@ -14,6 +15,7 @@ interface UseActivitiesResult {
 }
 
 export function useActivities(params: ActivityListParams): UseActivitiesResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useActivities(params: ActivityListParams): UseActivitiesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.category, params.planningType, params.active]);
+  }, [params.search, params.category, params.planningType, params.active, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

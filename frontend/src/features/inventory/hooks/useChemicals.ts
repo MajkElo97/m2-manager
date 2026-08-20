@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getChemicals } from '@/features/inventory/api/chemicalsApi';
 import { getInventoryErrorMessage } from '@/features/inventory/inventoryMessages';
 import type { Chemical, ChemicalListParams } from '@/features/inventory/types/chemical';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseChemicalsResult {
@@ -14,6 +15,7 @@ interface UseChemicalsResult {
 }
 
 export function useChemicals(params: ChemicalListParams): UseChemicalsResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [chemicals, setChemicals] = useState<Chemical[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useChemicals(params: ChemicalListParams): UseChemicalsResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.category, params.active, params.lowStock]);
+  }, [params.search, params.category, params.active, params.lowStock, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

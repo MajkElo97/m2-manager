@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getBuilding } from '@/features/buildings/api/buildingsApi';
 import { getBuildingErrorMessage } from '@/features/buildings/buildingsMessages';
 import type { Building } from '@/features/buildings/types/building';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseBuildingContextResult {
@@ -13,6 +14,7 @@ interface UseBuildingContextResult {
 }
 
 export function useBuildingContext(buildingId: string): UseBuildingContextResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [building, setBuilding] = useState<Building | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export function useBuildingContext(buildingId: string): UseBuildingContextResult
     } finally {
       setIsLoading(false);
     }
-  }, [buildingId]);
+  }, [buildingId, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

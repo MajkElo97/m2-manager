@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getManagers } from '@/features/managers/api/managersApi';
 import { getManagerErrorMessage } from '@/features/managers/managersMessages';
 import type { Manager, ManagerListParams } from '@/features/managers/types/manager';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseManagersResult {
@@ -14,6 +15,7 @@ interface UseManagersResult {
 }
 
 export function useManagers(params: ManagerListParams): UseManagersResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [managers, setManagers] = useState<Manager[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function useManagers(params: ManagerListParams): UseManagersResult {
     } finally {
       setIsLoading(false);
     }
-  }, [params.search, params.active]);
+  }, [params.search, params.active, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

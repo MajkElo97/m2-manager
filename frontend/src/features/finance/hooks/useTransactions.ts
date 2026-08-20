@@ -5,6 +5,7 @@ import type {
   FinancialTransaction,
   TransactionListParams,
 } from '@/features/finance/types/transaction';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseTransactionsResult {
@@ -17,6 +18,7 @@ interface UseTransactionsResult {
 }
 
 export function useTransactions(params: TransactionListParams): UseTransactionsResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +59,7 @@ export function useTransactions(params: TransactionListParams): UseTransactionsR
     params.status,
     params.dateFrom,
     params.dateTo,
+    organizationContextKey,
   ]);
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getScopes } from '@/features/scopes/api/scopesApi';
 import { getScopeErrorMessage } from '@/features/scopes/scopesMessages';
 import type { Scope } from '@/features/scopes/types/scope';
+import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
 import { ApiError } from '@/services/apiError';
 
 interface UseScopesResult {
@@ -14,6 +15,7 @@ interface UseScopesResult {
 }
 
 export function useScopes(buildingId?: string): UseScopesResult {
+  const organizationContextKey = useOrganizationContextKey();
   const [scopes, setScopes] = useState<Scope[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export function useScopes(buildingId?: string): UseScopesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [buildingId]);
+  }, [buildingId, organizationContextKey]);
 
   useEffect(() => {
     void refetch();

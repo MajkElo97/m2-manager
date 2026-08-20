@@ -4,6 +4,7 @@ import { type ReactElement, type ReactNode } from 'react';
 import { PermissionProvider } from '@/features/permissions/PermissionProvider';
 import { ThemeProvider } from '@/hooks/ThemeProvider';
 import type { PermissionsAdapter } from '@/features/permissions/permissionsAdapter';
+import { TestAuthProvider } from '@/test/testAuthProvider';
 
 interface TestProvidersProps {
   children: ReactNode;
@@ -20,7 +21,7 @@ export function TestProviders({
     <MemoryRouter {...routerProps}>
       <ThemeProvider>
         <PermissionProvider adapter={permissionsAdapter}>
-          {children}
+          <TestAuthProvider>{children}</TestAuthProvider>
         </PermissionProvider>
       </ThemeProvider>
     </MemoryRouter>
