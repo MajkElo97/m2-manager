@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import type { Activity } from '@/features/activities/types/activity';
 import {
   getActiveLabel,
+  getActivityOriginLabel,
   getPlanningTypeLabel,
   getPriorityLabel,
 } from '@/features/activities/utils/activityLabels';
@@ -10,7 +11,6 @@ import './ActivitiesTable.css';
 
 interface ActivitiesTableProps {
   activities: Activity[];
-  canEdit: boolean;
   canDelete: boolean;
   onEdit: (activity: Activity) => void;
   onDeactivate: (activity: Activity) => void;
@@ -20,9 +20,12 @@ function activeVariant(active: boolean): 'success' | 'neutral' {
   return active ? 'success' : 'neutral';
 }
 
+function originVariant(system: boolean): 'success' | 'neutral' {
+  return system ? 'neutral' : 'success';
+}
+
 export function ActivitiesTable({
   activities,
-  canEdit,
   canDelete,
   onEdit,
   onDeactivate,
@@ -34,6 +37,7 @@ export function ActivitiesTable({
           <tr>
             <th scope="col">Kod</th>
             <th scope="col">Nazwa</th>
+            <th scope="col">Pochodzenie</th>
             <th scope="col">Kategoria</th>
             <th scope="col">Typ planowania</th>
             <th scope="col">Domyślny okres</th>
@@ -48,6 +52,11 @@ export function ActivitiesTable({
             <tr key={activity.id}>
               <td className="activities-table__code">{activity.code}</td>
               <td>{activity.name}</td>
+              <td>
+                <Badge variant={originVariant(activity.system)}>
+                  {getActivityOriginLabel(activity.system)}
+                </Badge>
+              </td>
               <td>{activity.category}</td>
               <td>{getPlanningTypeLabel(activity.planningType)}</td>
               <td>{activity.defaultPeriod ?? '—'}</td>
@@ -60,17 +69,17 @@ export function ActivitiesTable({
               </td>
               <td>
                 <div className="activities-table__actions">
-                  {canEdit ? (
+                  {activity.manageable ? (
                     <Button variant="secondary" size="sm" onClick={() => onEdit(activity)}>
                       Edytuj
                     </Button>
                   ) : null}
-                  {canDelete && activity.active ? (
+                  {canDelete && activity.manageable && activity.active ? (
                     <Button variant="danger" size="sm" onClick={() => onDeactivate(activity)}>
                       Dezaktywuj
                     </Button>
                   ) : null}
-                  {!canEdit && !canDelete ? (
+                  {!activity.manageable ? (
                     <span className="activities-table__empty-cell">—</span>
                   ) : null}
                 </div>

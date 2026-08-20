@@ -19,6 +19,8 @@ const sampleActivities: Activity[] = [
     durationMinutes: 30,
     priority: 'NORMAL',
     active: true,
+    system: true,
+    manageable: false,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
   },
@@ -32,6 +34,8 @@ const sampleActivities: Activity[] = [
     durationMinutes: 120,
     priority: 'HIGH',
     active: false,
+    system: true,
+    manageable: false,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
   },
@@ -86,6 +90,8 @@ function createActivitiesFetchMock(options: MockFetchOptions = {}) {
         durationMinutes: body.durationMinutes ?? null,
         priority: body.priority ?? 'NORMAL',
         active: true,
+        system: body.system ?? false,
+        manageable: true,
         createdAt: '2025-01-01T00:00:00Z',
         updatedAt: '2025-01-01T00:00:00Z',
       };
@@ -178,9 +184,9 @@ describe('ActivitiesPage', () => {
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: 'Dodaj czynność' }));
 
-    expect(await screen.findByText('Podaj kod czynności.')).toBeInTheDocument();
-    expect(screen.getByText('Podaj nazwę czynności.')).toBeInTheDocument();
+    expect(await screen.findByText('Podaj nazwę czynności.')).toBeInTheDocument();
     expect(screen.getByText('Podaj kategorię.')).toBeInTheDocument();
+    expect(screen.queryByText('Podaj kod czynności.')).not.toBeInTheDocument();
   });
 
   it('handles API 403 with forbidden message', async () => {

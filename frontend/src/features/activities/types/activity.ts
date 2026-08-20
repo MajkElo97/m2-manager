@@ -12,11 +12,24 @@ export interface Activity {
   durationMinutes: number | null;
   priority: ActivityPriority;
   active: boolean;
+  system: boolean;
+  manageable: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateActivityPayload {
+  code?: string;
+  name: string;
+  category: string;
+  planningType: ActivityPlanningType;
+  defaultPeriod?: string;
+  durationMinutes?: number | null;
+  priority: ActivityPriority;
+  system?: boolean;
+}
+
+export interface UpdateActivityPayload {
   code: string;
   name: string;
   category: string;
@@ -24,9 +37,6 @@ export interface CreateActivityPayload {
   defaultPeriod?: string;
   durationMinutes?: number | null;
   priority: ActivityPriority;
-}
-
-export interface UpdateActivityPayload extends CreateActivityPayload {
   active: boolean;
 }
 

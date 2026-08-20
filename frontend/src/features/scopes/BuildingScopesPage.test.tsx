@@ -45,6 +45,8 @@ const sampleActivities: Activity[] = [
     durationMinutes: 30,
     priority: 'NORMAL',
     active: true,
+    system: true,
+    manageable: false,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
   },

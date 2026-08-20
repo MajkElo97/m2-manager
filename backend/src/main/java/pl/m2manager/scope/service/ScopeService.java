@@ -70,7 +70,7 @@ public class ScopeService {
 	public ScopeResponse create(CreateScopeRequest request) {
 		UUID organizationId = tenantContext.getCurrentOrganizationId();
 		requireBuildingInCurrentOrganization(request.buildingId(), organizationId);
-		activityService.requireActiveActivity(request.activityId());
+		activityService.requireActiveActivityVisibleToCurrentOrganization(request.activityId());
 		assertUniqueCode(organizationId, request.code(), null);
 
 		ActivityScope scope = new ActivityScope();
@@ -90,7 +90,7 @@ public class ScopeService {
 		UUID organizationId = tenantContext.getCurrentOrganizationId();
 		ActivityScope scope = requireScopeInCurrentOrganization(scopeId);
 		requireBuildingInCurrentOrganization(request.buildingId(), organizationId);
-		activityService.requireActiveActivity(request.activityId());
+		activityService.requireActiveActivityVisibleToCurrentOrganization(request.activityId());
 		assertUniqueCode(organizationId, request.code(), scopeId);
 		scopeMapper.applyUpdate(scope, request);
 

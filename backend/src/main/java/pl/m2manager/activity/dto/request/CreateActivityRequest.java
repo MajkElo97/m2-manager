@@ -8,12 +8,13 @@ import pl.m2manager.activity.entity.ActivityPlanningType;
 import pl.m2manager.activity.entity.ActivityPriority;
 
 public record CreateActivityRequest(
-		@NotBlank @Size(max = 100) String code,
+		@Size(max = 100) String code,
 		@NotBlank @Size(max = 255) String name,
 		@NotBlank @Size(max = 100) String category,
 		@NotNull ActivityPlanningType planningType,
 		@Size(max = 50) String defaultPeriod,
 		@Min(0) Integer durationMinutes,
-		@NotNull ActivityPriority priority
+		@NotNull ActivityPriority priority,
+		Boolean system
 ) {
 }

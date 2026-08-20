@@ -46,6 +46,21 @@
   font-size: 0.875rem;
 }
 
+.activity-form__hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.activity-form__checkbox-label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
 .activity-form__actions {
   display: flex;
   justify-content: flex-end;

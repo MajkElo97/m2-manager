@@ -16,6 +16,8 @@ public record ActivityResponse(
 		Integer durationMinutes,
 		ActivityPriority priority,
 		boolean active,
+		boolean system,
+		boolean manageable,
 		Instant createdAt,
 		Instant updatedAt
 ) {

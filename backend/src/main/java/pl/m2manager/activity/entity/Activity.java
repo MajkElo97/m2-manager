@@ -26,8 +26,11 @@ public class Activity extends AuditableEntity {
 
 	@NotBlank
 	@Size(max = 100)
-	@Column(nullable = false, length = 100, unique = true)
+	@Column(nullable = false, length = 100)
 	private String code;
+
+	@Column(name = "organization_id")
+	private UUID organizationId;
 
 	@NotBlank
 	@Size(max = 255)
@@ -126,5 +129,17 @@ public class Activity extends AuditableEntity {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public UUID getOrganizationId() {
+		return organizationId;
+	}
+
+	public void setOrganizationId(UUID organizationId) {
+		this.organizationId = organizationId;
+	}
+
+	public boolean isSystemActivity() {
+		return organizationId == null;
 	}
 }

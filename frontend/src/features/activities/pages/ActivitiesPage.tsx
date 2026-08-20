@@ -39,7 +39,7 @@ interface FormModalState {
 export function ActivitiesPage() {
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission('ACTIVITIES_CREATE');
-  const canEdit = hasPermission('ACTIVITIES_EDIT');
+  const canCreateSystemActivity = hasPermission('ACTIVITIES_ADMIN');
   const canDelete = hasPermission('ACTIVITIES_DELETE');
 
   const [search, setSearch] = useState('');
@@ -188,7 +188,6 @@ export function ActivitiesPage() {
         <div className="activities-page__desktop">
           <ActivitiesTable
             activities={activities}
-            canEdit={canEdit}
             canDelete={canDelete}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
@@ -197,7 +196,6 @@ export function ActivitiesPage() {
         <div className="activities-page__mobile">
           <ActivitiesMobileList
             activities={activities}
-            canEdit={canEdit}
             canDelete={canDelete}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
@@ -211,7 +209,7 @@ export function ActivitiesPage() {
     <AppLayoutContainer>
       <PageHeader
         title="Katalog czynności"
-        description="Globalny katalog czynności w systemie."
+        description="Katalog czynności systemowych M2 oraz czynności własnych organizacji."
         actions={
           canCreate ? (
             <Button onClick={openCreateModal}>
@@ -293,6 +291,7 @@ export function ActivitiesPage() {
             key={formModal.activity?.id ?? 'create'}
             mode={formModal.mode}
             initialActivity={formModal.activity}
+            canCreateSystemActivity={canCreateSystemActivity}
             submitLabel={formModal.mode === 'edit' ? 'Zapisz zmiany' : 'Dodaj czynność'}
             loading={formLoading}
             serverError={formError}

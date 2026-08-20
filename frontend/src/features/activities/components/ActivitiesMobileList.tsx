@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import type { Activity } from '@/features/activities/types/activity';
 import {
   getActiveLabel,
+  getActivityOriginLabel,
   getPlanningTypeLabel,
   getPriorityLabel,
 } from '@/features/activities/utils/activityLabels';
@@ -10,7 +11,6 @@ import './ActivitiesMobileList.css';
 
 interface ActivitiesMobileListProps {
   activities: Activity[];
-  canEdit: boolean;
   canDelete: boolean;
   onEdit: (activity: Activity) => void;
   onDeactivate: (activity: Activity) => void;
@@ -20,9 +20,12 @@ function activeVariant(active: boolean): 'success' | 'neutral' {
   return active ? 'success' : 'neutral';
 }
 
+function originVariant(system: boolean): 'success' | 'neutral' {
+  return system ? 'neutral' : 'success';
+}
+
 export function ActivitiesMobileList({
   activities,
-  canEdit,
   canDelete,
   onEdit,
   onDeactivate,
@@ -36,9 +39,14 @@ export function ActivitiesMobileList({
               <p className="activities-mobile-card__code">{activity.code}</p>
               <h3 className="activities-mobile-card__name">{activity.name}</h3>
             </div>
-            <Badge variant={activeVariant(activity.active)}>
-              {getActiveLabel(activity.active)}
-            </Badge>
+            <div className="activities-mobile-card__badges">
+              <Badge variant={originVariant(activity.system)}>
+                {getActivityOriginLabel(activity.system)}
+              </Badge>
+              <Badge variant={activeVariant(activity.active)}>
+                {getActiveLabel(activity.active)}
+              </Badge>
+            </div>
           </div>
 
           <dl className="activities-mobile-card__details">
@@ -60,18 +68,18 @@ export function ActivitiesMobileList({
             </div>
           </dl>
 
-          <div className="activities-mobile-card__actions">
-            {canEdit ? (
+          {activity.manageable ? (
+            <div className="activities-mobile-card__actions">
               <Button variant="secondary" size="sm" onClick={() => onEdit(activity)}>
                 Edytuj
               </Button>
-            ) : null}
-            {canDelete && activity.active ? (
-              <Button variant="danger" size="sm" onClick={() => onDeactivate(activity)}>
-                Dezaktywuj
-              </Button>
-            ) : null}
-          </div>
+              {canDelete && activity.active ? (
+                <Button variant="danger" size="sm" onClick={() => onDeactivate(activity)}>
+                  Dezaktywuj
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </article>
       ))}
     </div>

@@ -19,11 +19,13 @@ export interface ActivityFormValues {
   durationMinutes: string;
   priority: ActivityPriority;
   active: boolean;
+  system: boolean;
 }
 
 interface ActivityFormProps {
   mode: 'create' | 'edit';
   initialActivity?: Activity;
+  canCreateSystemActivity?: boolean;
   submitLabel: string;
   loading?: boolean;
   serverError?: string | null;
@@ -41,6 +43,7 @@ function emptyFormValues(): ActivityFormValues {
     durationMinutes: '',
     priority: 'NORMAL',
     active: true,
+    system: false,
   };
 }
 
@@ -54,16 +57,23 @@ function toFormValues(activity: Activity): ActivityFormValues {
     durationMinutes: activity.durationMinutes != null ? String(activity.durationMinutes) : '',
     priority: activity.priority,
     active: activity.active,
+    system: activity.system,
   };
 }
 
-function validateForm(values: ActivityFormValues): Partial<Record<keyof ActivityFormValues, string>> {
+function validateForm(
+  values: ActivityFormValues,
+  mode: ActivityFormProps['mode'],
+  canCreateSystemActivity: boolean,
+): Partial<Record<keyof ActivityFormValues, string>> {
   const errors: Partial<Record<keyof ActivityFormValues, string>> = {};
 
-  if (!values.code.trim()) {
-    errors.code = 'Podaj kod czynności.';
-  } else if (values.code.length > 100) {
-    errors.code = 'Kod może mieć maksymalnie 100 znaków.';
+  if (mode === 'create' && canCreateSystemActivity && values.system) {
+    if (!values.code.trim()) {
+      errors.code = 'Podaj kod czynności systemowej.';
+    } else if (values.code.length > 100) {
+      errors.code = 'Kod może mieć maksymalnie 100 znaków.';
+    }
   }
 
   if (!values.name.trim()) {
@@ -84,7 +94,27 @@ function validateForm(values: ActivityFormValues): Partial<Record<keyof Activity
   return errors;
 }
 
-function toPayload(values: ActivityFormValues): CreateActivityPayload {
+function toCreatePayload(values: ActivityFormValues): CreateActivityPayload {
+  const payload: CreateActivityPayload = {
+    name: values.name.trim(),
+    category: values.category.trim(),
+    planningType: values.planningType,
+    defaultPeriod: values.defaultPeriod.trim() || undefined,
+    durationMinutes: values.durationMinutes.trim()
+      ? Number(values.durationMinutes)
+      : undefined,
+    priority: values.priority,
+  };
+
+  if (values.system) {
+    payload.system = true;
+    payload.code = values.code.trim();
+  }
+
+  return payload;
+}
+
+function toUpdatePayload(values: ActivityFormValues): UpdateActivityPayload {
   return {
     code: values.code.trim(),
     name: values.name.trim(),
@@ -95,12 +125,14 @@ function toPayload(values: ActivityFormValues): CreateActivityPayload {
       ? Number(values.durationMinutes)
       : undefined,
     priority: values.priority,
+    active: values.active,
   };
 }
 
 export function ActivityForm({
   mode,
   initialActivity,
+  canCreateSystemActivity = false,
   submitLabel,
   loading = false,
   serverError,
@@ -122,31 +154,52 @@ export function ActivityForm({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const errors = validateForm(values);
+    const errors = validateForm(values, mode, canCreateSystemActivity);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
     }
 
-    const payload = toPayload(values);
     if (mode === 'edit') {
-      await onSubmit({ ...payload, active: values.active });
+      await onSubmit(toUpdatePayload(values));
     } else {
-      await onSubmit(payload);
+      await onSubmit(toCreatePayload(values));
     }
   };
+
+  const showSystemCodeField = mode === 'create' && canCreateSystemActivity && values.system;
+  const showReadOnlyCode = mode === 'edit';
 
   return (
     <form className="activity-form" onSubmit={handleSubmit} noValidate>
       <div className="activity-form__grid">
-        <Input
-          label="Kod"
-          name="code"
-          value={values.code}
-          error={fieldErrors.code}
-          onChange={(event) => updateField('code', event.target.value)}
-          required
-        />
+        {mode === 'create' && canCreateSystemActivity ? (
+          <label className="activity-form__checkbox-label">
+            <input
+              type="checkbox"
+              checked={values.system}
+              onChange={(event) => updateField('system', event.target.checked)}
+            />
+            <span>Czynność systemowa (globalna)</span>
+          </label>
+        ) : null}
+
+        {showSystemCodeField || showReadOnlyCode ? (
+          <Input
+            label="Kod"
+            name="code"
+            value={values.code}
+            error={fieldErrors.code}
+            onChange={(event) => updateField('code', event.target.value)}
+            readOnly={showReadOnlyCode}
+            required={showSystemCodeField}
+          />
+        ) : (
+          <p className="activity-form__hint">
+            Kod czynności własnej zostanie wygenerowany automatycznie (format ORG-…).
+          </p>
+        )}
+
         <Input
           label="Nazwa"
           name="name"

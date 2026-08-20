@@ -9,7 +9,7 @@ import pl.m2manager.activity.entity.Activity;
 @Component
 public class ActivityMapper {
 
-	public ActivityResponse toResponse(Activity activity) {
+	public ActivityResponse toResponse(Activity activity, boolean manageable) {
 		return new ActivityResponse(
 				activity.getId(),
 				activity.getCode(),
@@ -20,13 +20,15 @@ public class ActivityMapper {
 				activity.getDurationMinutes(),
 				activity.getPriority(),
 				activity.isActive(),
+				activity.isSystemActivity(),
+				manageable,
 				activity.getCreatedAt(),
 				activity.getUpdatedAt()
 		);
 	}
 
-	public void applyCreate(Activity activity, CreateActivityRequest request) {
-		activity.setCode(request.code());
+	public void applyCreate(Activity activity, CreateActivityRequest request, String resolvedCode) {
+		activity.setCode(resolvedCode);
 		activity.setName(request.name());
 		activity.setCategory(request.category());
 		activity.setPlanningType(request.planningType());
@@ -37,7 +39,6 @@ public class ActivityMapper {
 	}
 
 	public void applyUpdate(Activity activity, UpdateActivityRequest request) {
-		activity.setCode(request.code());
 		activity.setName(request.name());
 		activity.setCategory(request.category());
 		activity.setPlanningType(request.planningType());

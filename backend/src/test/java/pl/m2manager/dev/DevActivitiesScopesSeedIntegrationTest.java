@@ -50,7 +50,10 @@ class DevActivitiesScopesSeedIntegrationTest {
 
 	@Test
 	void devSeed_containsTwentyThreeActivities() {
-		assertThat(activityRepository.findAllByFilters(null, null, null, null)).hasSize(23);
+		assertThat(activityRepository.findAllVisibleByOrganizationIdAndFilters(
+				DEV_ORGANIZATION_ID, null, null, null, null
+		)).hasSize(23);
+		assertThat(activityRepository.findAll()).hasSize(23);
 	}
 
 	@Test
@@ -79,5 +82,6 @@ class DevActivitiesScopesSeedIntegrationTest {
 		assertThat(cz0020.getDefaultPeriod()).isEqualTo("15");
 		assertThat(cz0020.getDurationMinutes()).isNull();
 		assertThat(cz0020.getPriority().name()).isEqualTo("HIGH");
+		assertThat(cz0020.getOrganizationId()).isNull();
 	}
 }

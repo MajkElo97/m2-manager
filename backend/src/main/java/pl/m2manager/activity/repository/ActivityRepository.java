@@ -14,9 +14,12 @@ public interface ActivityRepository extends JpaRepository<Activity, UUID> {
 
 	Optional<Activity> findByCode(String code);
 
+	long countByOrganizationId(UUID organizationId);
+
 	@Query("""
 			SELECT a FROM Activity a
-			WHERE (:active IS NULL OR a.active = :active)
+			WHERE (a.organizationId IS NULL OR a.organizationId = :organizationId)
+			  AND (:active IS NULL OR a.active = :active)
 			  AND (:category IS NULL OR :category = '' OR a.category = :category)
 			  AND (:planningType IS NULL OR a.planningType = :planningType)
 			  AND (
@@ -26,7 +29,8 @@ public interface ActivityRepository extends JpaRepository<Activity, UUID> {
 			  )
 			ORDER BY a.code ASC
 			""")
-	List<Activity> findAllByFilters(
+	List<Activity> findAllVisibleByOrganizationIdAndFilters(
+			@Param("organizationId") UUID organizationId,
 			@Param("search") String search,
 			@Param("category") String category,
 			@Param("planningType") ActivityPlanningType planningType,

@@ -23,3 +23,7 @@ export function getPriorityLabel(priority: ActivityPriority): string {
 export function getActiveLabel(active: boolean): string {
   return active ? 'Aktywna' : 'Nieaktywna';
 }
+
+export function getActivityOriginLabel(system: boolean): string {
+  return system ? 'Systemowa' : 'Własna organizacji';
+}

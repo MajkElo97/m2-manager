@@ -94,6 +94,8 @@ class ActivityControllerTest {
 				30,
 				ActivityPriority.NORMAL,
 				true,
+				true,
+				false,
 				CREATED_AT,
 				UPDATED_AT
 		);
