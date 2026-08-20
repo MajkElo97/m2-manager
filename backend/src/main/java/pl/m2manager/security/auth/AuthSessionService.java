@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
+import pl.m2manager.common.exception.ResourceNotFoundException;
 import pl.m2manager.organization.repository.OrganizationRepository;
 import pl.m2manager.security.auth.dto.AuthenticationResponse;
 import pl.m2manager.security.auth.dto.AuthenticationResult;

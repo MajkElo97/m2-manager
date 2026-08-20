@@ -68,8 +68,7 @@ class AuthContextIntegrationTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Autowired
 	private OrganizationRepository organizationRepository;
@@ -159,7 +158,12 @@ class AuthContextIntegrationTest {
 
 	@Test
 	void switchOrganization_unauthenticated_returns401() throws Exception {
+		MvcResult csrfBootstrap = mockMvc.perform(get("/actuator/health")).andReturn();
+		Cookie csrfCookie = csrfBootstrap.getResponse().getCookie("XSRF-TOKEN");
+
 		mockMvc.perform(post("/api/auth/context/organization")
+						.cookie(csrfCookie)
+						.header("X-XSRF-TOKEN", csrfCookie.getValue())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{"organizationId":"%s"}
@@ -269,6 +273,66 @@ class AuthContextIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.permissions[?(@ == 'BUILDINGS_VIEW')]").exists())
 				.andExpect(jsonPath("$.permissions[?(@ == 'BUILDINGS_ADMIN')]").doesNotExist());
+	}
+
+	@Test
+	void afterSwitch_refreshTokenRotationWorksInTargetOrganization_multiOrgUser() throws Exception {
+		String token = loginAndExtractToken(slugA, multiOrgUser.getEmail(), "password");
+		Cookie refreshCookie = loginAndGetRefreshCookie(slugA, multiOrgUser.getEmail(), "password");
+
+		MvcResult switchResult = mockMvc.perform(post("/api/auth/context/organization")
+						.header("Authorization", "Bearer " + token)
+						.cookie(refreshCookie)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"organizationId":"%s"}
+								""".formatted(organizationB.getId())))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accessToken").isNotEmpty())
+				.andReturn();
+
+		String switchedToken = extractAccessToken(switchResult);
+		Cookie switchedRefreshCookie = switchResult.getResponse().getCookie("m2_refresh_token");
+		assertThat(switchedRefreshCookie).isNotNull();
+
+		MvcResult refreshResult = mockMvc.perform(post("/api/auth/refresh")
+						.header("Authorization", "Bearer " + switchedToken)
+						.cookie(switchedRefreshCookie))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accessToken").isNotEmpty())
+				.andReturn();
+
+		assertThat(decodeOrganizationId(extractAccessToken(refreshResult))).isEqualTo(organizationB.getId());
+	}
+
+	@Test
+	void afterSwitch_refreshTokenRotationWorksInTargetOrganization_superAdmin() throws Exception {
+		String token = loginAndExtractToken(slugA, superAdminUser.getEmail(), "password");
+		Cookie refreshCookie = loginAndGetRefreshCookie(slugA, superAdminUser.getEmail(), "password");
+
+		MvcResult switchResult = mockMvc.perform(post("/api/auth/context/organization")
+						.header("Authorization", "Bearer " + token)
+						.cookie(refreshCookie)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"organizationId":"%s"}
+								""".formatted(organizationB.getId())))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accessToken").isNotEmpty())
+				.andReturn();
+
+		String switchedToken = extractAccessToken(switchResult);
+		Cookie switchedRefreshCookie = switchResult.getResponse().getCookie("m2_refresh_token");
+		assertThat(switchedRefreshCookie).isNotNull();
+
+		MvcResult refreshResult = mockMvc.perform(post("/api/auth/refresh")
+						.header("Authorization", "Bearer " + switchedToken)
+						.cookie(switchedRefreshCookie))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accessToken").isNotEmpty())
+				.andReturn();
+
+		assertThat(decodeOrganizationId(extractAccessToken(refreshResult))).isEqualTo(organizationB.getId());
 	}
 
 	@Test

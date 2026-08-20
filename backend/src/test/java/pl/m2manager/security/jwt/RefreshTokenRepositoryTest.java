@@ -14,6 +14,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.m2manager.organization.entity.Organization;
 import pl.m2manager.organization.repository.OrganizationRepository;
 import pl.m2manager.user.entity.User;
+import pl.m2manager.user.entity.UserOrganization;
+import pl.m2manager.user.repository.UserOrganizationRepository;
 import pl.m2manager.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -57,6 +59,9 @@ class RefreshTokenRepositoryTest {
 	private UserRepository userRepository;
 
 	@Autowired
+	private UserOrganizationRepository userOrganizationRepository;
+
+	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	private Organization organizationA;
@@ -96,16 +101,36 @@ class RefreshTokenRepositoryTest {
 	}
 
 	@Test
-	void crossTenantUserOrganizationCombination_isRejected() {
-		RefreshToken crossTenant = new RefreshToken();
-		crossTenant.setUserId(userA.getId());
-		crossTenant.setOrganizationId(organizationB.getId());
-		crossTenant.setTokenHash(refreshTokenHasher.hash("cross-tenant-token"));
-		crossTenant.setFamilyId(UUID.randomUUID());
-		crossTenant.setCreatedAt(Instant.now());
-		crossTenant.setExpiresAt(Instant.now().plusSeconds(3600));
+	void activeOrganizationContext_canDifferFromHomeOrganization() {
+		userOrganizationRepository.saveAndFlush(
+				new UserOrganization(userA.getId(), organizationB.getId(), Instant.now())
+		);
 
-		assertThatThrownBy(() -> refreshTokenRepository.saveAndFlush(crossTenant))
+		RefreshToken crossOrg = new RefreshToken();
+		crossOrg.setUserId(userA.getId());
+		crossOrg.setOrganizationId(organizationB.getId());
+		crossOrg.setTokenHash(refreshTokenHasher.hash("cross-org-token"));
+		crossOrg.setFamilyId(UUID.randomUUID());
+		crossOrg.setCreatedAt(Instant.now());
+		crossOrg.setExpiresAt(Instant.now().plusSeconds(3600));
+
+		RefreshToken saved = refreshTokenRepository.saveAndFlush(crossOrg);
+
+		assertThat(saved.getOrganizationId()).isEqualTo(organizationB.getId());
+		assertThat(refreshTokenRepository.findById(saved.getId())).isPresent();
+	}
+
+	@Test
+	void unknownUserId_isRejected() {
+		RefreshToken orphan = new RefreshToken();
+		orphan.setUserId(UUID.fromString("f0000000-0000-4000-8000-000000000099"));
+		orphan.setOrganizationId(organizationA.getId());
+		orphan.setTokenHash(refreshTokenHasher.hash("orphan-token"));
+		orphan.setFamilyId(UUID.randomUUID());
+		orphan.setCreatedAt(Instant.now());
+		orphan.setExpiresAt(Instant.now().plusSeconds(3600));
+
+		assertThatThrownBy(() -> refreshTokenRepository.saveAndFlush(orphan))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
