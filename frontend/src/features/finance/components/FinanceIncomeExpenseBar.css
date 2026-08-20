@@ -1,0 +1,35 @@
+.finance-income-expense-bar {
+  margin-bottom: 1.25rem;
+}
+
+.finance-income-expense-bar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.finance-income-expense-bar__legend-item--income {
+  color: var(--success);
+}
+
+.finance-income-expense-bar__legend-item--expense {
+  color: var(--danger);
+}
+
+.finance-income-expense-bar__track {
+  display: flex;
+  overflow: hidden;
+  height: 0.625rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.finance-income-expense-bar__segment--income {
+  background: color-mix(in srgb, var(--success) 75%, transparent);
+}
+
+.finance-income-expense-bar__segment--expense {
+  background: color-mix(in srgb, var(--danger) 75%, transparent);
+}

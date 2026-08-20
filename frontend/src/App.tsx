@@ -7,6 +7,8 @@ import { BuildingsPage } from '@/features/buildings/pages/BuildingsPage';
 import { BuildingContactsPage } from '@/features/contacts/pages/BuildingContactsPage';
 import { ContactsPage } from '@/features/contacts/pages/ContactsPage';
 import { EmployeesPage } from '@/features/employees/pages/EmployeesPage';
+import { FinancePage } from '@/features/finance/pages/FinancePage';
+import { BuildingFinancePage } from '@/features/finance/pages/BuildingFinancePage';
 import { FleetPage } from '@/features/fleet/pages/FleetPage';
 import { InventoryPage } from '@/features/inventory/pages/InventoryPage';
 import { ManagersPage } from '@/features/managers/pages/ManagersPage';
@@ -27,6 +29,7 @@ const IMPLEMENTED_ROUTES = new Set([
   '/contacts',
   '/dashboard',
   '/employees',
+  '/finance',
   '/fleet',
   '/inventory',
   '/managers',
@@ -51,6 +54,7 @@ export function AppRoutes() {
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/finance" element={<FinancePage />} />
           <Route path="/fleet" element={<FleetPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/managers" element={<ManagersPage />} />
@@ -60,6 +64,7 @@ export function AppRoutes() {
           <Route path="/staircases" element={<StaircasesPage />} />
           <Route path="/supervisors" element={<SupervisorsPage />} />
           <Route path="/buildings/:buildingId/contacts" element={<BuildingContactsPage />} />
+          <Route path="/buildings/:buildingId/finance" element={<BuildingFinancePage />} />
           <Route path="/buildings/:buildingId/scopes" element={<BuildingScopesPage />} />
           <Route path="/buildings/:buildingId/staircases" element={<BuildingStaircasesPage />} />
           <Route path="/buildings" element={<BuildingsPage />} />

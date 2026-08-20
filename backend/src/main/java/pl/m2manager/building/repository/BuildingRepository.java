@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import pl.m2manager.building.entity.Building;
 import pl.m2manager.building.entity.BuildingStatus;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,5 +34,15 @@ public interface BuildingRepository extends JpaRepository<Building, UUID> {
 			@Param("organizationId") UUID organizationId,
 			@Param("status") BuildingStatus status,
 			@Param("search") String search
+	);
+
+	@Query("""
+			SELECT b FROM Building b
+			WHERE b.organization.id = :organizationId
+			  AND b.id IN :ids
+			""")
+	List<Building> findAllByIdInAndOrganizationId(
+			@Param("ids") Collection<UUID> ids,
+			@Param("organizationId") UUID organizationId
 	);
 }

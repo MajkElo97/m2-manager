@@ -9,11 +9,13 @@ interface BuildingsTableProps {
   canViewStaircases: boolean;
   canViewScopes: boolean;
   canViewContacts: boolean;
+  canViewFinance: boolean;
   canEdit: boolean;
   canDelete: boolean;
   onStaircases: (building: Building) => void;
   onScopes: (building: Building) => void;
   onContacts: (building: Building) => void;
+  onFinance: (building: Building) => void;
   onEdit: (building: Building) => void;
   onDeactivate: (building: Building) => void;
 }
@@ -31,11 +33,13 @@ export function BuildingsTable({
   canViewStaircases,
   canViewScopes,
   canViewContacts,
+  canViewFinance,
   canEdit,
   canDelete,
   onStaircases,
   onScopes,
   onContacts,
+  onFinance,
   onEdit,
   onDeactivate,
 }: BuildingsTableProps) {
@@ -91,6 +95,11 @@ export function BuildingsTable({
                       Kontakty
                     </Button>
                   ) : null}
+                  {canViewFinance ? (
+                    <Button variant="secondary" size="sm" onClick={() => onFinance(building)}>
+                      Finanse
+                    </Button>
+                  ) : null}
                   {canEdit ? (
                     <Button variant="secondary" size="sm" onClick={() => onEdit(building)}>
                       Edytuj
@@ -101,7 +110,7 @@ export function BuildingsTable({
                       Dezaktywuj
                     </Button>
                   ) : null}
-                  {!canViewStaircases && !canViewScopes && !canViewContacts && !canEdit && !canDelete ? (
+                  {!canViewStaircases && !canViewScopes && !canViewContacts && !canViewFinance && !canEdit && !canDelete ? (
                     <span className="buildings-table__empty-cell">—</span>
                   ) : null}
                 </div>

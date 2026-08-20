@@ -1,0 +1,9 @@
+.finance-amount--income {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.finance-amount--expense {
+  color: var(--danger);
+  font-weight: 500;
+}
