@@ -56,7 +56,10 @@ class DevBusinessRolesSeedIntegrationTest {
 
 	@Test
 	void devSeed_containsBusinessRoles() {
-		assertThat(roleRepository.findByOrganizationId(DEV_ORGANIZATION_ID)).hasSize(5);
+		assertThat(roleRepository.findByOrganizationId(DEV_ORGANIZATION_ID)).hasSize(4);
+		assertThat(roleRepository.findByOrganizationId(DEV_ORGANIZATION_ID))
+				.extracting(role -> role.getName())
+				.containsExactlyInAnyOrder("ADMIN", "BIURO", "KOORDYNATOR", "PRACOWNIK");
 	}
 
 	@Test
@@ -106,7 +109,7 @@ class DevBusinessRolesSeedIntegrationTest {
 	void superAdmin_keepsFullAccess() {
 		Set<String> permissions = effectivePermissionService.resolvePermissionCodes(
 				SUPER_ADMIN_USER_ID,
-				DEV_ORGANIZATION_ID
+				UUID.fromString("00000000-0000-4000-8000-000000000001")
 		);
 		assertThat(permissions).contains("BUILDINGS_VIEW", "USERS_VIEW", "ROLES_VIEW", "SETTINGS_VIEW");
 	}

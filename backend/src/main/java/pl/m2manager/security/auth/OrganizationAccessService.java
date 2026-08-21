@@ -41,9 +41,22 @@ public class OrganizationAccessService {
 		return userRoleRepository.hasSuperAdminRole(userId);
 	}
 
+	public boolean isSystemOrganization(UUID organizationId) {
+		return organizationRepository.findById(organizationId)
+				.map(Organization::isSystemOrganization)
+				.orElse(false);
+	}
+
 	public boolean canAccessOrganization(UUID userId, UUID organizationId) {
-		if (organizationRepository.findById(organizationId).isEmpty()) {
+		Organization organization = organizationRepository.findById(organizationId).orElse(null);
+		if (organization == null) {
 			return false;
+		}
+		if (organization.isSystemOrganization()) {
+			return isSuperAdmin(userId)
+					&& userRepository.findById(userId)
+							.map(user -> user.getOrganization().getId().equals(organizationId))
+							.orElse(false);
 		}
 		if (isSuperAdmin(userId)) {
 			return true;
@@ -62,19 +75,28 @@ public class OrganizationAccessService {
 		}
 	}
 
+	public void requireSwitchableOrganizationAccess(UUID userId, UUID organizationId) {
+		if (isSystemOrganization(organizationId)) {
+			throw new AccessDeniedException("Cannot switch to system organization");
+		}
+		requireOrganizationAccess(userId, organizationId);
+	}
+
 	public List<OrganizationSummary> findAvailableOrganizations(UUID userId) {
 		List<Organization> organizations;
 		if (isSuperAdmin(userId)) {
-			organizations = organizationRepository.findAll();
+			organizations = organizationRepository.findBySystemOrganizationFalseOrderByNameAsc();
 		} else {
 			Set<UUID> organizationIds = new HashSet<>(userOrganizationRepository.findOrganizationIdsByUserId(userId));
 			userRepository.findById(userId)
 					.ifPresent(user -> organizationIds.add(user.getOrganization().getId()));
-			organizations = organizationRepository.findAllById(organizationIds);
+			organizations = organizationRepository.findAllById(organizationIds).stream()
+					.filter(organization -> !organization.isSystemOrganization())
+					.sorted(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER))
+					.toList();
 		}
 
 		return organizations.stream()
-				.sorted(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER))
 				.map(this::toSummary)
 				.toList();
 	}

@@ -43,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -282,6 +283,33 @@ class ActivityTenantSecurityIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.manageable").value(true))
 				.andExpect(jsonPath("$.name").value("Tereny zewnętrzne - super admin"));
+	}
+
+	@Test
+	void adminOrganizationA_cannotDeactivateSystemActivity() throws Exception {
+		String token = login(slugA, adminA.getEmail());
+
+		mockMvc.perform(delete("/api/activities/{id}", systemActivity.getId())
+						.header("Authorization", "Bearer " + token))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void superAdmin_canDeactivateSystemActivity() throws Exception {
+		String token = login(slugA, superAdmin.getEmail());
+
+		mockMvc.perform(delete("/api/activities/{id}", systemActivity.getId())
+						.header("Authorization", "Bearer " + token))
+				.andExpect(status().isNoContent());
+	}
+
+	@Test
+	void adminOrganizationA_canDeactivateOwnActivity() throws Exception {
+		String token = login(slugA, adminA.getEmail());
+
+		mockMvc.perform(delete("/api/activities/{id}", orgActivityA.getId())
+						.header("Authorization", "Bearer " + token))
+				.andExpect(status().isNoContent());
 	}
 
 	@Test

@@ -46,6 +46,9 @@ public class Organization extends AuditableEntity {
 	@Column(nullable = false)
 	private boolean active = true;
 
+	@Column(name = "system_organization", nullable = false)
+	private boolean systemOrganization = false;
+
 	@NotBlank
 	@Size(max = 64)
 	@Column(nullable = false, length = 64)
@@ -97,6 +100,14 @@ public class Organization extends AuditableEntity {
 
 	public boolean isActive() {
 		return active;
+	}
+
+	public boolean isSystemOrganization() {
+		return systemOrganization;
+	}
+
+	public void setSystemOrganization(boolean systemOrganization) {
+		this.systemOrganization = systemOrganization;
 	}
 
 	public String getTimezone() {

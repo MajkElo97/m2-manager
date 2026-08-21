@@ -78,11 +78,11 @@ class BuildingDevProfileIntegrationTest {
 	}
 
 	private String loginAndExtractToken() throws Exception {
-		MvcResult result = mockMvc.perform(post("/api/auth/login")
+		MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
-								  "organizationSlug": "m2-manager-dev",
+								  "organizationSlug": "admin",
 								  "email": "admin@m2manager.local",
 								  "password": "Admin123!"
 								}
@@ -91,9 +91,24 @@ class BuildingDevProfileIntegrationTest {
 				.andExpect(jsonPath("$.accessToken").isNotEmpty())
 				.andReturn();
 
-		String responseBody = result.getResponse().getContentAsString();
-		int tokenStart = responseBody.indexOf("\"accessToken\":\"") + 15;
-		int tokenEnd = responseBody.indexOf('"', tokenStart);
-		return responseBody.substring(tokenStart, tokenEnd);
+		String loginBody = loginResult.getResponse().getContentAsString();
+		int loginTokenStart = loginBody.indexOf("\"accessToken\":\"") + 15;
+		int loginTokenEnd = loginBody.indexOf('"', loginTokenStart);
+		String loginToken = loginBody.substring(loginTokenStart, loginTokenEnd);
+
+		MvcResult switchResult = mockMvc.perform(post("/api/auth/context/organization")
+						.header("Authorization", "Bearer " + loginToken)
+						.cookie(loginResult.getResponse().getCookie("m2_refresh_token"))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"organizationId":"a0000000-0000-4000-8000-000000000001"}
+								"""))
+				.andExpect(status().isOk())
+				.andReturn();
+
+		String switchBody = switchResult.getResponse().getContentAsString();
+		int switchTokenStart = switchBody.indexOf("\"accessToken\":\"") + 15;
+		int switchTokenEnd = switchBody.indexOf('"', switchTokenStart);
+		return switchBody.substring(switchTokenStart, switchTokenEnd);
 	}
 }

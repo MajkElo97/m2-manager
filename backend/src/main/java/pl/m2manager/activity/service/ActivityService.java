@@ -84,6 +84,8 @@ public class ActivityService {
 			return saveCreatedActivity(activity, context);
 		}
 
+		requireBusinessOrganizationContext(context.organizationId());
+
 		String code = resolveOrganizationActivityCode(context.organizationId(), request.code());
 		assertUniqueCode(code, null);
 
@@ -183,7 +185,16 @@ public class ActivityService {
 		if (activity.isSystemActivity()) {
 			return organizationAccessService.isSuperAdmin(context.userId());
 		}
+		if (organizationAccessService.isSystemOrganization(context.organizationId())) {
+			return false;
+		}
 		return context.organizationId().equals(activity.getOrganizationId());
+	}
+
+	private void requireBusinessOrganizationContext(UUID organizationId) {
+		if (organizationAccessService.isSystemOrganization(organizationId)) {
+			throw new AccessDeniedException("Organization activities cannot be created in system organization context");
+		}
 	}
 
 	private String resolveOrganizationActivityCode(UUID organizationId, String requestedCode) {

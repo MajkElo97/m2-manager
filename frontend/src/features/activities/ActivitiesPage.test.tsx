@@ -205,4 +205,36 @@ describe('ActivitiesPage', () => {
 
     expect(await screen.findByText('BRAK CZYNNOŚCI')).toBeInTheDocument();
   });
+
+  it('hides edit and deactivate actions for non-manageable system activities', async () => {
+    renderActivitiesPage();
+
+    await waitForActivityInTable('CZ0001');
+    expect(within(screen.getByRole('table')).queryByRole('button', { name: 'Edytuj' })).not.toBeInTheDocument();
+    expect(within(screen.getByRole('table')).queryByRole('button', { name: 'Dezaktywuj' })).not.toBeInTheDocument();
+  });
+
+  it('shows edit and deactivate actions for manageable organization activities', async () => {
+    vi.stubGlobal(
+      'fetch',
+      createActivitiesFetchMock({
+        activities: [
+          {
+            ...sampleActivities[0],
+            id: 'f0000000-0000-4000-8000-000000000050',
+            code: 'ORG-M2G001',
+            name: 'Polerowanie balustrad',
+            system: false,
+            manageable: true,
+          },
+        ],
+      }),
+    );
+
+    renderActivitiesPage();
+
+    await waitForActivityInTable('ORG-M2G001');
+    expect(within(screen.getByRole('table')).getByRole('button', { name: 'Edytuj' })).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByRole('button', { name: 'Dezaktywuj' })).toBeInTheDocument();
+  });
 });

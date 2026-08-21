@@ -89,7 +89,7 @@ public class AuthSessionService {
 			throw new ResourceNotFoundException("Organization not found");
 		}
 
-		organizationAccessService.requireOrganizationAccess(principal.userId(), organizationId);
+		organizationAccessService.requireSwitchableOrganizationAccess(principal.userId(), organizationId);
 
 		var user = userRepository.findById(principal.userId())
 				.orElseThrow(() -> new ResourceNotFoundException("User not found"));

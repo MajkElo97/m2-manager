@@ -31,9 +31,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers(disabledWithoutDocker = true)
 class DevAdminUserSeedIntegrationTest {
 
+	static final UUID SYSTEM_ORGANIZATION_ID = UUID.fromString("00000000-0000-4000-8000-000000000001");
 	static final UUID DEV_ORGANIZATION_ID = UUID.fromString("a0000000-0000-4000-8000-000000000001");
 	static final UUID DEV_USER_ID = UUID.fromString("b0000000-0000-4000-8000-000000000001");
 	static final UUID DEV_ROLE_ID = UUID.fromString("b0000000-0000-4000-8000-000000000002");
+	static final String SYSTEM_ORGANIZATION_SLUG = "admin";
 	static final String DEV_ORGANIZATION_SLUG = "m2-manager-dev";
 	static final String DEV_USER_EMAIL = "admin@m2manager.local";
 	static final String DEV_USER_PASSWORD = "Admin123!";
@@ -79,49 +81,52 @@ class DevAdminUserSeedIntegrationTest {
 	private JdbcTemplate jdbcTemplate;
 
 	@Test
-	void devAdminUser_existsInDevOrganization() {
-		User user = userRepository.findByIdAndOrganizationId(DEV_USER_ID, DEV_ORGANIZATION_ID).orElseThrow();
+	void devAdminUser_existsInSystemOrganization() {
+		User user = userRepository.findByIdAndOrganizationId(DEV_USER_ID, SYSTEM_ORGANIZATION_ID).orElseThrow();
 
 		assertThat(user.getEmail()).isEqualTo(DEV_USER_EMAIL);
 		assertThat(user.getFirstName()).isEqualTo("Admin");
 		assertThat(user.getLastName()).isEqualTo("M2");
 		assertThat(user.isActive()).isTrue();
-		assertThat(organizationRepository.findBySlug(DEV_ORGANIZATION_SLUG)).isPresent();
+		assertThat(organizationRepository.findBySlug(SYSTEM_ORGANIZATION_SLUG)).isPresent();
+		assertThat(organizationRepository.findById(SYSTEM_ORGANIZATION_ID).orElseThrow().isSystemOrganization()).isTrue();
+		assertThat(organizationRepository.findById(DEV_ORGANIZATION_ID).orElseThrow().isSystemOrganization()).isFalse();
 	}
 
 	@Test
-	void devAdminUser_passwordAuthenticates() {
-		User user = userRepository.findByIdAndOrganizationId(DEV_USER_ID, DEV_ORGANIZATION_ID).orElseThrow();
+	void devAdminUser_passwordAuthenticatesAgainstSystemOrganization() {
+		User user = userRepository.findByIdAndOrganizationId(DEV_USER_ID, SYSTEM_ORGANIZATION_ID).orElseThrow();
 
 		assertThat(passwordEncoder.matches(DEV_USER_PASSWORD, user.getPasswordHash())).isTrue();
 
 		AuthenticationResult result = authenticationService.authenticate(
-				DEV_ORGANIZATION_SLUG,
+				SYSTEM_ORGANIZATION_SLUG,
 				DEV_USER_EMAIL,
 				DEV_USER_PASSWORD
 		);
 
 		assertThat(result.userId()).isEqualTo(DEV_USER_ID);
-		assertThat(result.organizationId()).isEqualTo(DEV_ORGANIZATION_ID);
+		assertThat(result.organizationId()).isEqualTo(SYSTEM_ORGANIZATION_ID);
 		assertThat(result.email()).isEqualTo(DEV_USER_EMAIL);
 	}
 
 	@Test
-	void devAdminUser_hasSuperAdminRoleAssigned() {
-		var role = roleRepository.findByIdAndOrganizationId(DEV_ROLE_ID, DEV_ORGANIZATION_ID).orElseThrow();
+	void devAdminUser_hasSuperAdminRoleAssignedInSystemOrganization() {
+		var role = roleRepository.findByIdAndOrganizationId(DEV_ROLE_ID, SYSTEM_ORGANIZATION_ID).orElseThrow();
 
 		assertThat(role.getName()).isEqualTo("SUPER_ADMIN");
 		assertThat(role.isSystemRole()).isTrue();
 		assertThat(role.isActive()).isTrue();
 		assertThat(userRoleRepository.findById(new UserRoleId(DEV_USER_ID, DEV_ROLE_ID)))
 				.isPresent();
+		assertThat(roleRepository.findByIdAndOrganizationId(DEV_ROLE_ID, DEV_ORGANIZATION_ID)).isEmpty();
 	}
 
 	@Test
 	void devSuperAdminRole_hasAllPermissionsAssigned() {
 		long assignedPermissions = rolePermissionRepository.findPermissionsByRoleIdAndOrganizationId(
 				DEV_ROLE_ID,
-				DEV_ORGANIZATION_ID
+				SYSTEM_ORGANIZATION_ID
 		).size();
 
 		assertThat(permissionRepository.count()).isEqualTo(85);
@@ -132,8 +137,21 @@ class DevAdminUserSeedIntegrationTest {
 	void devAdminUserSeed_isIdempotent() {
 		int permissionsBefore = rolePermissionRepository.findPermissionsByRoleIdAndOrganizationId(
 				DEV_ROLE_ID,
-				DEV_ORGANIZATION_ID
+				SYSTEM_ORGANIZATION_ID
 		).size();
+
+		jdbcTemplate.execute("""
+				INSERT INTO organizations (id, name, slug, active, timezone, system_organization)
+				VALUES (
+				    '00000000-0000-4000-8000-000000000001',
+				    'ADMIN',
+				    'admin',
+				    TRUE,
+				    'Europe/Warsaw',
+				    TRUE
+				)
+				ON CONFLICT (id) DO UPDATE SET system_organization = TRUE
+				""");
 
 		jdbcTemplate.execute("""
 				INSERT INTO users (
@@ -147,14 +165,14 @@ class DevAdminUserSeedIntegrationTest {
 				)
 				VALUES (
 				    'b0000000-0000-4000-8000-000000000001',
-				    'a0000000-0000-4000-8000-000000000001',
+				    '00000000-0000-4000-8000-000000000001',
 				    'admin@m2manager.local',
 				    '$2a$12$Jt8iSmQesv59..E7KFXyI.pn/M9HZkEQD0j1uBZMvM.bV9ni4jeju',
 				    'Admin',
 				    'M2',
 				    TRUE
 				)
-				ON CONFLICT (id) DO NOTHING
+				ON CONFLICT (id) DO UPDATE SET organization_id = EXCLUDED.organization_id
 				""");
 
 		jdbcTemplate.execute("""
@@ -168,23 +186,23 @@ class DevAdminUserSeedIntegrationTest {
 				)
 				VALUES (
 				    'b0000000-0000-4000-8000-000000000002',
-				    'a0000000-0000-4000-8000-000000000001',
+				    '00000000-0000-4000-8000-000000000001',
 				    'SUPER_ADMIN',
 				    'Development super administrator',
 				    TRUE,
 				    TRUE
 				)
-				ON CONFLICT (id) DO NOTHING
+				ON CONFLICT (id) DO UPDATE SET organization_id = EXCLUDED.organization_id
 				""");
 
 		jdbcTemplate.execute("""
 				INSERT INTO user_roles (organization_id, user_id, role_id)
 				VALUES (
-				    'a0000000-0000-4000-8000-000000000001',
+				    '00000000-0000-4000-8000-000000000001',
 				    'b0000000-0000-4000-8000-000000000001',
 				    'b0000000-0000-4000-8000-000000000002'
 				)
-				ON CONFLICT (user_id, role_id) DO NOTHING
+				ON CONFLICT (user_id, role_id) DO UPDATE SET organization_id = EXCLUDED.organization_id
 				""");
 
 		jdbcTemplate.execute("""
@@ -194,12 +212,12 @@ class DevAdminUserSeedIntegrationTest {
 				ON CONFLICT (role_id, permission_id) DO NOTHING
 				""");
 
-		assertThat(userRepository.findByIdAndOrganizationId(DEV_USER_ID, DEV_ORGANIZATION_ID)).isPresent();
-		assertThat(roleRepository.findByIdAndOrganizationId(DEV_ROLE_ID, DEV_ORGANIZATION_ID)).isPresent();
+		assertThat(userRepository.findByIdAndOrganizationId(DEV_USER_ID, SYSTEM_ORGANIZATION_ID)).isPresent();
+		assertThat(roleRepository.findByIdAndOrganizationId(DEV_ROLE_ID, SYSTEM_ORGANIZATION_ID)).isPresent();
 		assertThat(userRoleRepository.findById(new UserRoleId(DEV_USER_ID, DEV_ROLE_ID))).isPresent();
 		assertThat(rolePermissionRepository.findPermissionsByRoleIdAndOrganizationId(
 				DEV_ROLE_ID,
-				DEV_ORGANIZATION_ID
+				SYSTEM_ORGANIZATION_ID
 		)).hasSize(permissionsBefore);
 		assertThat(permissionsBefore).isEqualTo(85);
 	}
