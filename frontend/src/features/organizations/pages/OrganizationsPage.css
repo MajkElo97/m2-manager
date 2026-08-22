@@ -1,0 +1,145 @@
+.organization-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.organization-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.organization-form__section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.organization-form__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.organization-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.organizations-page__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.organizations-page__toolbar .input-wrapper {
+  flex: 1 1 240px;
+}
+
+.organizations-page__filters {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.organizations-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.organizations-table th,
+.organizations-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.organizations-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.organizations-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.organizations-mobile-card {
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.organizations-mobile-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.organizations-mobile-card__meta {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.credentials-dialog__warning {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--color-warning-bg, #fff7ed);
+  color: var(--color-warning-text, #9a3412);
+  font-size: 0.875rem;
+}
+
+.credentials-dialog__grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.credentials-dialog__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.credentials-dialog__label {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.credentials-dialog__value {
+  font-family: var(--font-mono, monospace);
+  word-break: break-all;
+}
+
+.credentials-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .organizations-table-wrapper {
+    display: block;
+  }
+
+  .organizations-mobile-list {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .organizations-table-wrapper {
+    display: none;
+  }
+}

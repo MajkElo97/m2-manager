@@ -106,10 +106,13 @@ public class AuthSessionService {
 	}
 
 	private AuthenticationResponse buildAccessTokenResponse(AuthenticationResult result) {
+		var user = userRepository.findById(result.userId())
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		return new AuthenticationResponse(
 				jwtService.generateAccessToken(result),
 				"Bearer",
-				jwtService.accessTokenExpirationSeconds()
+				jwtService.accessTokenExpirationSeconds(),
+				user.isMustChangePassword()
 		);
 	}
 

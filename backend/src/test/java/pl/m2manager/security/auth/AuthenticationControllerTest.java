@@ -40,7 +40,7 @@ class AuthenticationControllerTest {
 	@Test
 	void login_validCredentials_returns200WithAccessToken() throws Exception {
 		when(authSessionService.login(eq("org-a"), eq("john@example.com"), eq("passwordA"), any()))
-				.thenReturn(new AuthenticationResponse("jwt-access-token", "Bearer", 900L));
+				.thenReturn(new AuthenticationResponse("jwt-access-token", "Bearer", 900L, false));
 
 		mockMvc.perform(post("/api/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)

@@ -22,7 +22,8 @@ export interface NavigationItem {
   label: string;
   path: string;
   icon: LucideIcon;
-  requiredPermission: string;
+  requiredPermission?: string;
+  superAdminOnly?: boolean;
 }
 
 export const mainNavigation: NavigationItem[] = [
@@ -43,6 +44,7 @@ export const mainNavigation: NavigationItem[] = [
 ];
 
 export const adminNavigation: NavigationItem[] = [
+  { label: 'Organizacje', path: '/organizations', icon: Building2, superAdminOnly: true },
   { label: 'Użytkownicy', path: '/users', icon: Users, requiredPermission: 'USERS_VIEW' },
   { label: 'Role', path: '/roles', icon: Shield, requiredPermission: 'ROLES_VIEW' },
   { label: 'Ustawienia', path: '/settings', icon: Settings, requiredPermission: 'SETTINGS_VIEW' },
@@ -71,7 +73,8 @@ export const appRoutes: AppRoute[] = [
   { path: '/reports', moduleName: 'Raporty', placeholder: true },
   { path: '/users', moduleName: 'Użytkownicy' },
   { path: '/roles', moduleName: 'Role' },
-  { path: '/settings', moduleName: 'Ustawienia', placeholder: true },
+  { path: '/organizations', moduleName: 'Organizacje' },
+  { path: '/settings', moduleName: 'Ustawienia' },
 ];
 
 export const PLACEHOLDER_ICON = ClipboardList;

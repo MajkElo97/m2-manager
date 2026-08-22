@@ -52,6 +52,9 @@ public class User extends AuditableEntity {
 	@Column(nullable = false)
 	private boolean active = true;
 
+	@Column(name = "must_change_password", nullable = false)
+	private boolean mustChangePassword = false;
+
 	@Column(name = "last_login_at")
 	private Instant lastLoginAt;
 
@@ -109,6 +112,14 @@ public class User extends AuditableEntity {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public boolean isMustChangePassword() {
+		return mustChangePassword;
+	}
+
+	public void setMustChangePassword(boolean mustChangePassword) {
+		this.mustChangePassword = mustChangePassword;
 	}
 
 	public Instant getLastLoginAt() {

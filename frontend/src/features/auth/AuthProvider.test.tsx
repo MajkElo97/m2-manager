@@ -61,6 +61,7 @@ describe('AuthProvider login flow', () => {
             accessToken: token,
             tokenType: 'Bearer',
             expiresIn: 900,
+            mustChangePassword: false,
           });
         }
 
@@ -88,6 +89,8 @@ describe('AuthProvider login flow', () => {
               },
             ],
             canSwitchOrganizations: false,
+            mustChangePassword: false,
+            superAdmin: false,
           });
         }
 
@@ -139,6 +142,7 @@ describe('AuthProvider login flow', () => {
             accessToken: orgAToken,
             tokenType: 'Bearer',
             expiresIn: 900,
+            mustChangePassword: false,
           });
         }
 
@@ -147,6 +151,7 @@ describe('AuthProvider login flow', () => {
             accessToken: orgBToken,
             tokenType: 'Bearer',
             expiresIn: 900,
+            mustChangePassword: false,
           });
         }
 
@@ -173,6 +178,8 @@ describe('AuthProvider login flow', () => {
               { id: 'org-b', name: 'Org B', slug: 'org-b' },
             ],
             canSwitchOrganizations: true,
+            mustChangePassword: false,
+            superAdmin: false,
           });
         }
 

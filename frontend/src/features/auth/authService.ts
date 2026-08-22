@@ -1,4 +1,4 @@
-import type { AuthenticationResponse, AuthContextResponse, LoginRequest } from '@/features/auth/authTypes';
+import type { AuthenticationResponse, AuthContextResponse, ChangePasswordPayload, LoginRequest } from '@/features/auth/authTypes';
 import { tokenStore } from '@/features/auth/tokenStore';
 import { apiClient, awaitPendingRefresh } from '@/services/apiClient';
 import { ensureCsrfCookie } from '@/services/csrf';
@@ -34,6 +34,7 @@ export const authService = {
       accessToken,
       tokenType: 'Bearer',
       expiresIn: 900,
+      mustChangePassword: false,
     };
   },
 
@@ -66,5 +67,9 @@ export const authService = {
     });
     tokenStore.set(response.accessToken);
     return response;
+  },
+
+  async changePassword(payload: ChangePasswordPayload): Promise<void> {
+    await apiClient.post<void>('/api/auth/change-password', payload);
   },
 };

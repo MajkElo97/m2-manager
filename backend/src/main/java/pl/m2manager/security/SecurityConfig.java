@@ -11,6 +11,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import pl.m2manager.security.auth.AccountPasswordService;
+import pl.m2manager.security.auth.MustChangePasswordFilter;
 import pl.m2manager.security.jwt.JwtAccessDeniedHandler;
 import pl.m2manager.security.jwt.JwtAuthenticationEntryPoint;
 import pl.m2manager.security.jwt.JwtAuthenticationFilter;
@@ -33,9 +35,15 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	MustChangePasswordFilter mustChangePasswordFilter(AccountPasswordService accountPasswordService) {
+		return new MustChangePasswordFilter(accountPasswordService);
+	}
+
+	@Bean
 	SecurityFilterChain securityFilterChain(
 			HttpSecurity http,
 			JwtAuthenticationFilter jwtAuthenticationFilter,
+			MustChangePasswordFilter mustChangePasswordFilter,
 			JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
 			JwtAccessDeniedHandler jwtAccessDeniedHandler
 	) throws Exception {
@@ -74,6 +82,7 @@ public class SecurityConfig {
 						.authenticationEntryPoint(jwtAuthenticationEntryPoint)
 						.accessDeniedHandler(jwtAccessDeniedHandler))
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterAfter(mustChangePasswordFilter, JwtAuthenticationFilter.class)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable);
 

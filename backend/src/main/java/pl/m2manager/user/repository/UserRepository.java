@@ -17,6 +17,19 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
 	Optional<User> findByOrganizationIdAndEmail(UUID organizationId, String email);
 
+	Optional<User> findByEmail(String email);
+
+	boolean existsByEmail(String email);
+
+	@Query("""
+			SELECT u FROM User u
+			JOIN UserRole ur ON ur.id.userId = u.id AND ur.organizationId = :organizationId
+			JOIN Role r ON r.id = ur.id.roleId AND r.organization.id = :organizationId
+			WHERE r.name = 'ADMIN' AND r.systemRole = false AND u.organization.id = :organizationId
+			ORDER BY u.createdAt ASC
+			""")
+	List<User> findOrganizationAdmins(@Param("organizationId") UUID organizationId);
+
 	@Query("""
 			SELECT DISTINCT u FROM User u
 			LEFT JOIN UserRole ur ON ur.id.userId = u.id AND ur.organizationId = u.organization.id

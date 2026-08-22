@@ -101,7 +101,7 @@ public class UserService {
 			return toResponse(saved);
 		}
 		catch (DataIntegrityViolationException ex) {
-			throw new BusinessConflictException("User email already exists in organization");
+			throw new BusinessConflictException("Użytkownik o takim loginie już istnieje.");
 		}
 	}
 
@@ -129,7 +129,7 @@ public class UserService {
 			return toResponse(userRepository.save(user));
 		}
 		catch (DataIntegrityViolationException ex) {
-			throw new BusinessConflictException("User email already exists in organization");
+			throw new BusinessConflictException("Użytkownik o takim loginie już istnieje.");
 		}
 	}
 
@@ -200,9 +200,10 @@ public class UserService {
 	}
 
 	private void assertUniqueEmail(UUID organizationId, String email, UUID excludeUserId) {
-		userRepository.findByOrganizationIdAndEmail(organizationId, email.trim().toLowerCase()).ifPresent(existing -> {
+		String normalizedEmail = email.trim().toLowerCase();
+		userRepository.findByEmail(normalizedEmail).ifPresent(existing -> {
 			if (excludeUserId == null || !existing.getId().equals(excludeUserId)) {
-				throw new BusinessConflictException("User email already exists in organization");
+				throw new BusinessConflictException("Użytkownik o takim loginie już istnieje.");
 			}
 		});
 	}

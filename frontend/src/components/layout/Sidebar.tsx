@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { adminNavigation, mainNavigation, type NavigationItem } from '@/config/navigation';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { usePermissions } from '@/features/permissions/PermissionProvider';
 import './Sidebar.css';
 
@@ -8,14 +9,34 @@ interface SidebarProps {
   onNavigate?: () => void;
 }
 
-function filterNavigation(items: NavigationItem[], hasPermission: (code: string) => boolean) {
-  return items.filter((item) => hasPermission(item.requiredPermission));
+function isNavigationItemVisible(
+  item: NavigationItem,
+  hasPermission: (code: string) => boolean,
+  isSuperAdmin: boolean,
+) {
+  if (item.superAdminOnly) {
+    return isSuperAdmin;
+  }
+  if (!item.requiredPermission) {
+    return false;
+  }
+  return hasPermission(item.requiredPermission);
+}
+
+function filterNavigation(
+  items: NavigationItem[],
+  hasPermission: (code: string) => boolean,
+  isSuperAdmin: boolean,
+) {
+  return items.filter((item) => isNavigationItemVisible(item, hasPermission, isSuperAdmin));
 }
 
 export function Sidebar({ mobileOpen, onNavigate }: SidebarProps) {
   const { hasPermission } = usePermissions();
-  const visibleMain = filterNavigation(mainNavigation, hasPermission);
-  const visibleAdmin = filterNavigation(adminNavigation, hasPermission);
+  const { context } = useAuth();
+  const isSuperAdmin = context?.superAdmin ?? false;
+  const visibleMain = filterNavigation(mainNavigation, hasPermission, isSuperAdmin);
+  const visibleAdmin = filterNavigation(adminNavigation, hasPermission, isSuperAdmin);
 
   return (
     <aside className={`sidebar ${mobileOpen ? 'sidebar--open' : ''}`} aria-label="Nawigacja główna">

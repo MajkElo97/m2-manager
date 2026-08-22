@@ -123,8 +123,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (credentials: LoginRequest) => {
       const response = await authService.login(credentials);
       await establishSession(response.accessToken);
+      if (response.mustChangePassword) {
+        navigate('/change-password', { replace: true });
+      }
     },
-    [establishSession],
+    [establishSession, navigate],
   );
 
   const logout = useCallback(async () => {

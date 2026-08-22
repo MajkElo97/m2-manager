@@ -43,7 +43,9 @@ public class AuthContextService {
 				toUserSummary(user),
 				organizationAccessService.toSummary(activeOrganization),
 				availableOrganizations,
-				availableOrganizations.size() > 1
+				availableOrganizations.size() > 1,
+				user.isMustChangePassword(),
+				organizationAccessService.isSuperAdmin(principal.userId())
 		);
 	}
 

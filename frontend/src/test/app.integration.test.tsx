@@ -9,6 +9,7 @@ import { PermissionProvider, usePermissions } from '@/features/permissions/Permi
 import { ThemeProvider, useTheme } from '@/hooks/ThemeProvider';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Route, Routes } from 'react-router-dom';
+import { TestAuthProvider } from '@/test/testAuthProvider';
 import { createMockJwt } from '@/test/testUtils';
 
 function SidebarHarness() {
@@ -82,7 +83,7 @@ describe('ProtectedRoute', () => {
           return new Response(null, { status: 200 });
         }
         if (url.includes('/api/auth/refresh')) {
-          return Response.json({ accessToken: token, tokenType: 'Bearer', expiresIn: 900 });
+          return Response.json({ accessToken: token, tokenType: 'Bearer', expiresIn: 900, mustChangePassword: false });
         }
         if (url.includes('/api/auth/permissions')) {
           return new Response(null, { status: 404 });
@@ -93,6 +94,8 @@ describe('ProtectedRoute', () => {
             activeOrganization: { id: 'org-1', name: 'Test Org', slug: 'test-org' },
             availableOrganizations: [{ id: 'org-1', name: 'Test Org', slug: 'test-org' }],
             canSwitchOrganizations: false,
+            mustChangePassword: false,
+            superAdmin: false,
           });
         }
         return new Response(null, { status: 404 });
@@ -174,9 +177,11 @@ describe('Sidebar permission-aware navigation', () => {
     render(
       <MemoryRouter>
         <ThemeProvider>
-          <PermissionProvider adapter={{ loadPermissions: async () => ['DASHBOARD_VIEW'] }}>
-            <SidebarHarness />
-          </PermissionProvider>
+          <TestAuthProvider>
+            <PermissionProvider adapter={{ loadPermissions: async () => ['DASHBOARD_VIEW'] }}>
+              <SidebarHarness />
+            </PermissionProvider>
+          </TestAuthProvider>
         </ThemeProvider>
       </MemoryRouter>,
     );

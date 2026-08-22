@@ -21,6 +21,15 @@ export interface AuthContextResponse {
   activeOrganization: OrganizationSummary;
   availableOrganizations: OrganizationSummary[];
   canSwitchOrganizations: boolean;
+  mustChangePassword: boolean;
+  superAdmin: boolean;
+}
+
+export interface AuthenticationResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
+  mustChangePassword: boolean;
 }
 
 export interface LoginRequest {
@@ -29,10 +38,10 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface AuthenticationResponse {
-  accessToken: string;
-  tokenType: string;
-  expiresIn: number;
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export type AuthStatus = 'initializing' | 'authenticated' | 'unauthenticated';

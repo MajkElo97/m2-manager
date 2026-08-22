@@ -6,6 +6,8 @@ public record AuthContextResponse(
 		AuthUserSummary user,
 		OrganizationSummary activeOrganization,
 		List<OrganizationSummary> availableOrganizations,
-		boolean canSwitchOrganizations
+		boolean canSwitchOrganizations,
+		boolean mustChangePassword,
+		boolean superAdmin
 ) {
 }

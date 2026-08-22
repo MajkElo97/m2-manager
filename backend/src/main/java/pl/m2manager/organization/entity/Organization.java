@@ -102,6 +102,10 @@ public class Organization extends AuditableEntity {
 		return active;
 	}
 
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
 	public boolean isSystemOrganization() {
 		return systemOrganization;
 	}

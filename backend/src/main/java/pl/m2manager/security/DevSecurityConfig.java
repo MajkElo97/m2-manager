@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import pl.m2manager.security.auth.AccountPasswordService;
+import pl.m2manager.security.auth.MustChangePasswordFilter;
 import pl.m2manager.security.jwt.JwtAuthenticationFilter;
 import pl.m2manager.security.jwt.JwtService;
 
@@ -26,15 +28,22 @@ public class DevSecurityConfig {
 	}
 
 	@Bean
+	MustChangePasswordFilter mustChangePasswordFilter(AccountPasswordService accountPasswordService) {
+		return new MustChangePasswordFilter(accountPasswordService);
+	}
+
+	@Bean
 	SecurityFilterChain devSecurityFilterChain(
 			HttpSecurity http,
-			JwtAuthenticationFilter jwtAuthenticationFilter
+			JwtAuthenticationFilter jwtAuthenticationFilter,
+			MustChangePasswordFilter mustChangePasswordFilter
 	) throws Exception {
 		http
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterAfter(mustChangePasswordFilter, JwtAuthenticationFilter.class)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable);
 

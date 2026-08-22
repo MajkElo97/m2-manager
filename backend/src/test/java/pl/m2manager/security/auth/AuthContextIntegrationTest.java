@@ -114,13 +114,13 @@ class AuthContextIntegrationTest {
 		slugA = "ctx-a-" + suffix;
 		slugB = "ctx-b-" + suffix;
 
-		organizationA = saveOrganization("Context Org A", slugA);
-		organizationB = saveOrganization("Context Org B", slugB);
-		organizationC = saveOrganization("Context Org C", "ctx-c-" + suffix);
+		organizationA = saveOrganization("Context Org A " + suffix, slugA);
+		organizationB = saveOrganization("Context Org B " + suffix, slugB);
+		organizationC = saveOrganization("Context Org C " + suffix, "ctx-c-" + suffix);
 
-		multiOrgUser = saveUser(organizationA, "multi@example.com", "password");
-		singleOrgUser = saveUser(organizationA, "single@example.com", "password");
-		superAdminUser = saveUser(organizationA, "super@example.com", "password");
+		multiOrgUser = saveUser(organizationA, "multi-" + suffix + "@example.com", "password");
+		singleOrgUser = saveUser(organizationA, "single-" + suffix + "@example.com", "password");
+		superAdminUser = saveUser(organizationA, "super-" + suffix + "@example.com", "password");
 
 		grantOrganizationAccess(multiOrgUser, organizationA);
 		grantOrganizationAccess(multiOrgUser, organizationB);
@@ -375,7 +375,7 @@ class AuthContextIntegrationTest {
 						.header("Authorization", "Bearer " + token))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.user.email").value(multiOrgUser.getEmail()))
-				.andExpect(jsonPath("$.user.name").value("multi@example.com"))
+				.andExpect(jsonPath("$.user.name").value(multiOrgUser.getEmail()))
 				.andExpect(jsonPath("$.activeOrganization.slug").value(slugA))
 				.andExpect(jsonPath("$.availableOrganizations.length()").value(2))
 				.andExpect(jsonPath("$.canSwitchOrganizations").value(true));

@@ -37,6 +37,8 @@ describe('Topbar organization context', () => {
           { id: 'org-1', name: 'M2 Group', slug: 'm2-group' },
         ],
         canSwitchOrganizations: false,
+        mustChangePassword: false,
+        superAdmin: false,
       },
     });
 
@@ -51,6 +53,8 @@ describe('Topbar organization context', () => {
         activeOrganization: { id: 'org-1', name: 'M2 Group', slug: 'm2-group' },
         availableOrganizations: [{ id: 'org-1', name: 'M2 Group', slug: 'm2-group' }],
         canSwitchOrganizations: false,
+        mustChangePassword: false,
+        superAdmin: false,
       },
     });
 
@@ -68,6 +72,8 @@ describe('Topbar organization context', () => {
           { id: 'org-2', name: 'Kozera Nieruchomości', slug: 'kozera-nieruchomosci' },
         ],
         canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: false,
       },
     });
 
@@ -90,6 +96,8 @@ describe('Topbar organization context', () => {
           { id: 'org-2', name: 'Kozera Nieruchomości', slug: 'kozera-nieruchomosci' },
         ],
         canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: false,
       },
       switchOrganization,
     });

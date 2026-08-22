@@ -12,6 +12,7 @@ import { BuildingFinancePage } from '@/features/finance/pages/BuildingFinancePag
 import { FleetPage } from '@/features/fleet/pages/FleetPage';
 import { InventoryPage } from '@/features/inventory/pages/InventoryPage';
 import { ManagersPage } from '@/features/managers/pages/ManagersPage';
+import { OrganizationsPage } from '@/features/organizations/pages/OrganizationsPage';
 import { RolesPage } from '@/features/roles/pages/RolesPage';
 import { UsersPage } from '@/features/users/pages/UsersPage';
 import { BuildingScopesPage } from '@/features/scopes/pages/BuildingScopesPage';
@@ -19,9 +20,11 @@ import { ScopesPage } from '@/features/scopes/pages/ScopesPage';
 import { BuildingStaircasesPage } from '@/features/staircases/pages/BuildingStaircasesPage';
 import { StaircasesPage } from '@/features/staircases/pages/StaircasesPage';
 import { SupervisorsPage } from '@/features/supervisors/pages/SupervisorsPage';
+import { ChangePasswordPage } from '@/pages/ChangePasswordPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
+import { SettingsPage } from '@/pages/SettingsPage';
 
 const IMPLEMENTED_ROUTES = new Set([
   '/activities',
@@ -33,7 +36,9 @@ const IMPLEMENTED_ROUTES = new Set([
   '/fleet',
   '/inventory',
   '/managers',
+  '/organizations',
   '/roles',
+  '/settings',
   '/users',
   '/scopes',
   '/staircases',
@@ -48,9 +53,13 @@ export function AppRoutes() {
       </Route>
 
       <Route element={<ProtectedRoute />}>
+        <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/organizations" element={<OrganizationsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/change-password" element={<ChangePasswordPage />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
