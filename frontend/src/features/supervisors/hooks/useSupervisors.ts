@@ -3,6 +3,7 @@ import { getSupervisors } from '@/features/supervisors/api/supervisorsApi';
 import { getSupervisorErrorMessage } from '@/features/supervisors/supervisorsMessages';
 import type { Supervisor, SupervisorListParams } from '@/features/supervisors/types/supervisor';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseSupervisorsResult {
@@ -23,6 +24,15 @@ export function useSupervisors(params: SupervisorListParams): UseSupervisorsResu
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setSupervisors([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

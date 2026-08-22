@@ -58,8 +58,8 @@ describe('OrganizationsPage', () => {
     renderOrganizationsPage({
       context: {
         user: { id: 'user-1', name: 'Super Admin', email: 'admin@m2manager.local' },
-        activeOrganization: { id: 'sys-1', name: 'ADMIN', slug: 'admin' },
-        availableOrganizations: [],
+        activeOrganization: null,
+        availableOrganizations: [{ id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
         canSwitchOrganizations: true,
         mustChangePassword: false,
         superAdmin: true,
@@ -114,6 +114,81 @@ describe('OrganizationsPage', () => {
 
     expect(await screen.findByText(/Aktywny kontekst:/)).toBeInTheDocument();
     expect(screen.getByText('M2 Manager Dev')).toBeInTheDocument();
+
+    vi.unstubAllGlobals();
+  });
+
+  it('shows no active context message when super admin has no organization selected', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/api/organizations')) {
+          return Response.json([]);
+        }
+        return new Response(null, { status: 404 });
+      }),
+    );
+
+    renderOrganizationsPage({
+      context: {
+        user: { id: 'user-1', name: 'Super Admin', email: 'admin@m2manager.local' },
+        activeOrganization: null,
+        availableOrganizations: [{ id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    expect(await screen.findByText('Brak aktywnego kontekstu organizacji')).toBeInTheDocument();
+
+    vi.unstubAllGlobals();
+  });
+
+  it('renders desktop table with readable text layout classes', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/api/organizations')) {
+          return Response.json([
+            {
+              id: 'a0000000-0000-4000-8000-000000000001',
+              name: 'M2 Manager Dev',
+              slug: 'm2-manager-dev',
+              adminName: 'Michał Ociepka',
+              adminEmail: 'multiadmin@m2manager.local',
+              active: true,
+              createdAt: '2026-01-01T10:00:00Z',
+            },
+          ]);
+        }
+        return new Response(null, { status: 404 });
+      }),
+    );
+
+    renderOrganizationsPage({
+      context: {
+        user: { id: 'user-1', name: 'Super Admin', email: 'admin@m2manager.local' },
+        activeOrganization: null,
+        availableOrganizations: [],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    const table = await screen.findByRole('table');
+    const name = within(table).getByText('M2 Manager Dev');
+    const admin = within(table).getByText('Michał Ociepka');
+
+    expect(name.className).toContain('organizations-table__name');
+    expect(name.className).not.toContain('organizations-table__slug');
+    expect(admin.className).toContain('organizations-table__admin-name');
+    expect(getComputedStyle(name).wordBreak).not.toBe('break-all');
+    expect(within(table).getByRole('button', { name: 'Edytuj' })).toBeInTheDocument();
+    expect(within(table).getByRole('button', { name: 'Resetuj hasło' })).toBeInTheDocument();
 
     vi.unstubAllGlobals();
   });

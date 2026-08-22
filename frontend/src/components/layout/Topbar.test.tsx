@@ -140,4 +140,46 @@ describe('Topbar organization context', () => {
 
     expect(screen.queryByText('SUPER ADMIN')).not.toBeInTheDocument();
   });
+
+  it('shows Brak organizacji selector for super admin without active organization', () => {
+    renderTopbar({
+      context: {
+        user: { id: 'super-1', name: 'Admin M2', email: 'admin@m2manager.local' },
+        activeOrganization: null,
+        availableOrganizations: [
+          { id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+          { id: 'org-2', name: 'Secondary Org', slug: 'm2-manager-dev-secondary' },
+        ],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    const selector = screen.getByRole('combobox', { name: 'Wybierz organizację' });
+    expect(selector).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Brak organizacji' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'M2 Manager Dev' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'ADMIN' })).not.toBeInTheDocument();
+  });
+
+  it('calls switchOrganization when super admin selects a business organization', async () => {
+    const user = userEvent.setup();
+    const switchOrganization = vi.fn(async () => {});
+
+    renderTopbar({
+      context: {
+        user: { id: 'super-1', name: 'Admin M2', email: 'admin@m2manager.local' },
+        activeOrganization: null,
+        availableOrganizations: [{ id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+      switchOrganization,
+    });
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Wybierz organizację' }), 'org-dev');
+    expect(switchOrganization).toHaveBeenCalledWith('org-dev');
+  });
 });

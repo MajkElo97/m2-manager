@@ -3,6 +3,7 @@ import { getActivities } from '@/features/activities/api/activitiesApi';
 import { getActivityErrorMessage } from '@/features/activities/activitiesMessages';
 import type { Activity, ActivityListParams } from '@/features/activities/types/activity';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseActivitiesResult {
@@ -23,6 +24,15 @@ export function useActivities(params: ActivityListParams): UseActivitiesResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setActivities([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

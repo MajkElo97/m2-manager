@@ -24,6 +24,13 @@ export function OrganizationsTable({
   return (
     <div className="organizations-table-wrapper">
       <table className="organizations-table">
+        <colgroup>
+          <col className="organizations-table__col-name" />
+          <col className="organizations-table__col-admin" />
+          <col className="organizations-table__col-status" />
+          <col className="organizations-table__col-date" />
+          <col className="organizations-table__col-actions" />
+        </colgroup>
         <thead>
           <tr>
             <th scope="col">Nazwa organizacji</th>
@@ -36,13 +43,17 @@ export function OrganizationsTable({
         <tbody>
           {organizations.map((organization) => (
             <tr key={organization.id}>
-              <td className="organizations-table__name-cell">
-                <span className="organizations-table__name">{organization.name}</span>
-                <span className="organizations-table__slug">{organization.slug}</span>
+              <td>
+                <div className="organizations-table__cell-stack">
+                  <span className="organizations-table__name">{organization.name}</span>
+                  <span className="organizations-table__slug">{organization.slug}</span>
+                </div>
               </td>
-              <td className="organizations-table__admin-cell">
-                <span className="organizations-table__admin-name">{organization.adminName}</span>
-                <span className="organizations-table__admin-email">{organization.adminEmail}</span>
+              <td>
+                <div className="organizations-table__cell-stack">
+                  <span className="organizations-table__admin-name">{organization.adminName}</span>
+                  <span className="organizations-table__admin-email">{organization.adminEmail}</span>
+                </div>
               </td>
               <td>
                 <Badge variant={organization.active ? 'success' : 'neutral'}>

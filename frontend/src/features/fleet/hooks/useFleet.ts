@@ -3,6 +3,7 @@ import { getVehicles } from '@/features/fleet/api/fleetApi';
 import { getFleetErrorMessage } from '@/features/fleet/fleetMessages';
 import type { Vehicle, VehicleListParams } from '@/features/fleet/types/vehicle';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseFleetResult {
@@ -23,6 +24,15 @@ export function useFleet(params: VehicleListParams): UseFleetResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setVehicles([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

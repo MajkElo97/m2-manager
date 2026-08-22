@@ -3,6 +3,7 @@ import { getStaircases } from '@/features/staircases/api/staircasesApi';
 import { getStaircaseErrorMessage } from '@/features/staircases/staircasesMessages';
 import type { Staircase } from '@/features/staircases/types/staircase';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseStaircasesResult {
@@ -23,6 +24,15 @@ export function useStaircases(buildingId?: string): UseStaircasesResult {
   const [notFound, setNotFound] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setStaircases([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setNotFound(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

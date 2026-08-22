@@ -3,6 +3,7 @@ import { getUsers } from '@/features/users/api/usersApi';
 import { getUserErrorMessage } from '@/features/users/usersMessages';
 import type { User, UserListParams } from '@/features/users/types/user';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseUsersResult {
@@ -23,6 +24,15 @@ export function useUsers(params: UserListParams): UseUsersResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setUsers([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

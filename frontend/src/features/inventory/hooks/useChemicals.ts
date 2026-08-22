@@ -3,6 +3,7 @@ import { getChemicals } from '@/features/inventory/api/chemicalsApi';
 import { getInventoryErrorMessage } from '@/features/inventory/inventoryMessages';
 import type { Chemical, ChemicalListParams } from '@/features/inventory/types/chemical';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseChemicalsResult {
@@ -23,6 +24,15 @@ export function useChemicals(params: ChemicalListParams): UseChemicalsResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setChemicals([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

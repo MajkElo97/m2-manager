@@ -3,6 +3,7 @@ import { getScopes } from '@/features/scopes/api/scopesApi';
 import { getScopeErrorMessage } from '@/features/scopes/scopesMessages';
 import type { Scope } from '@/features/scopes/types/scope';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseScopesResult {
@@ -23,6 +24,15 @@ export function useScopes(buildingId?: string): UseScopesResult {
   const [notFound, setNotFound] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setScopes([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setNotFound(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

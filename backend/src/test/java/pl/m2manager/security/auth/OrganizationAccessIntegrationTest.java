@@ -58,8 +58,9 @@ class OrganizationAccessIntegrationTest {
 		MvcResult result = mockMvc.perform(get("/api/auth/context")
 						.header("Authorization", "Bearer " + token))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.activeOrganization.slug").value("admin"))
+				.andExpect(jsonPath("$.activeOrganization").isEmpty())
 				.andExpect(jsonPath("$.canSwitchOrganizations").value(true))
+				.andExpect(jsonPath("$.superAdmin").value(true))
 				.andReturn();
 
 		JsonNode organizations = objectMapper.readTree(result.getResponse().getContentAsString())

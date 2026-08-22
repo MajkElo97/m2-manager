@@ -3,6 +3,7 @@ import { getCategories } from '@/features/finance/api/financeApi';
 import { getFinanceErrorMessage } from '@/features/finance/financeMessages';
 import type { CategoryListParams, FinancialCategory } from '@/features/finance/types/category';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseCategoriesResult {
@@ -23,6 +24,15 @@ export function useCategories(params: CategoryListParams): UseCategoriesResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setCategories([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

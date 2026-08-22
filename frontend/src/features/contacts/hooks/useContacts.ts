@@ -3,6 +3,7 @@ import { getContacts } from '@/features/contacts/api/contactsApi';
 import { getContactErrorMessage } from '@/features/contacts/contactsMessages';
 import type { Contact, ContactListParams } from '@/features/contacts/types/contact';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseContactsResult {
@@ -23,6 +24,15 @@ export function useContacts(params: ContactListParams = {}): UseContactsResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setContacts([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

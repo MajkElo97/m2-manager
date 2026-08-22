@@ -3,6 +3,7 @@ import { getEquipment } from '@/features/inventory/api/equipmentApi';
 import { getInventoryErrorMessage } from '@/features/inventory/inventoryMessages';
 import type { Equipment, EquipmentListParams } from '@/features/inventory/types/equipment';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseEquipmentResult {
@@ -23,6 +24,15 @@ export function useEquipment(params: EquipmentListParams): UseEquipmentResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setEquipment([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

@@ -130,4 +130,51 @@ describe('tenant scope refetch on organization context change', () => {
     expect(screen.getByTestId('employees')).not.toHaveTextContent('ORG-A-EMP');
     expect(getEmployees).toHaveBeenCalledTimes(2);
   });
+
+  it('useBuildings does not fetch when organization context is missing', async () => {
+    getBuildings.mockResolvedValue([]);
+
+    render(
+      <TestAuthProvider value={{ organizationContextKey: null }}>
+        <BuildingsProbe />
+      </TestAuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('buildings')).toHaveTextContent('');
+    });
+    expect(getBuildings).not.toHaveBeenCalled();
+  });
+
+  it('useBuildings refetches when organization context changes from null to active', async () => {
+    getBuildings.mockResolvedValueOnce([
+      {
+        id: '2',
+        code: 'ORG-B-BLD',
+        name: 'Org B Building',
+        status: 'ACTIVE',
+      },
+    ]);
+
+    const { rerender } = render(
+      <TestAuthProvider value={{ organizationContextKey: null }}>
+        <BuildingsProbe />
+      </TestAuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getBuildings).not.toHaveBeenCalled();
+    });
+
+    rerender(
+      <TestAuthProvider value={{ organizationContextKey: ORG_B }}>
+        <BuildingsProbe />
+      </TestAuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('buildings')).toHaveTextContent('ORG-B-BLD');
+    });
+    expect(getBuildings).toHaveBeenCalledTimes(1);
+  });
 });

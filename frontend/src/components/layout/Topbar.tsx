@@ -21,13 +21,22 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
 
   const displayName = context?.user.name ?? context?.user.email ?? 'Użytkownik';
   const displayEmail = context?.user.email ?? '';
-  const activeOrganization = context?.activeOrganization;
+  const activeOrganization = context?.activeOrganization ?? null;
   const availableOrganizations = context?.availableOrganizations ?? [];
-  const canSwitch = (context?.canSwitchOrganizations ?? false) && availableOrganizations.length > 1;
   const isSuperAdmin = context?.superAdmin ?? false;
+  const showOrganizationSelector = isSuperAdmin
+    ? availableOrganizations.length > 0
+    : Boolean(activeOrganization);
+  const showOrganizationDropdown = isSuperAdmin
+    ? availableOrganizations.length > 0
+    : (context?.canSwitchOrganizations ?? false) && availableOrganizations.length > 1;
 
   async function handleOrganizationChange(nextOrganizationId: string) {
-    if (!activeOrganization || nextOrganizationId === activeOrganization.id || isSwitching) {
+    if (!nextOrganizationId || isSwitching) {
+      return;
+    }
+
+    if (activeOrganization?.id === nextOrganizationId) {
       return;
     }
 
@@ -58,17 +67,22 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
       <div className="topbar__spacer" aria-hidden="true" />
 
       <div className="topbar__right">
-        {activeOrganization ? (
+        {showOrganizationSelector ? (
           <div className="topbar__organization">
             <span className="topbar__organization-label">Organizacja:</span>
-            {canSwitch ? (
+            {showOrganizationDropdown ? (
               <select
                 className="topbar__organization-select"
                 aria-label="Wybierz organizację"
-                value={activeOrganization.id}
+                value={activeOrganization?.id ?? ''}
                 disabled={isSwitching}
                 onChange={(event) => void handleOrganizationChange(event.target.value)}
               >
+                {!activeOrganization ? (
+                  <option value="" disabled>
+                    Brak organizacji
+                  </option>
+                ) : null}
                 {availableOrganizations.map((organization) => (
                   <option key={organization.id} value={organization.id}>
                     {organization.name}
@@ -76,7 +90,9 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
                 ))}
               </select>
             ) : (
-              <span className="topbar__organization-value">{activeOrganization.name}</span>
+              <span className="topbar__organization-value">
+                {activeOrganization?.name ?? 'Brak organizacji'}
+              </span>
             )}
           </div>
         ) : null}

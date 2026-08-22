@@ -3,6 +3,7 @@ import { getBuilding } from '@/features/buildings/api/buildingsApi';
 import { getBuildingErrorMessage } from '@/features/buildings/buildingsMessages';
 import type { Building } from '@/features/buildings/types/building';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseBuildingContextResult {
@@ -21,6 +22,14 @@ export function useBuildingContext(buildingId: string): UseBuildingContextResult
   const [notFound, setNotFound] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setBuilding(null);
+      setIsLoading(false);
+      setError(null);
+      setNotFound(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setNotFound(false);

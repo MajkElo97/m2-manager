@@ -3,6 +3,7 @@ import { getBuildings } from '@/features/buildings/api/buildingsApi';
 import { getBuildingErrorMessage } from '@/features/buildings/buildingsMessages';
 import type { Building, BuildingListParams } from '@/features/buildings/types/building';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseBuildingsResult {
@@ -23,6 +24,15 @@ export function useBuildings(params: BuildingListParams): UseBuildingsResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setBuildings([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

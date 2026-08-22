@@ -3,6 +3,7 @@ import { getManagers } from '@/features/managers/api/managersApi';
 import { getManagerErrorMessage } from '@/features/managers/managersMessages';
 import type { Manager, ManagerListParams } from '@/features/managers/types/manager';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseManagersResult {
@@ -23,6 +24,15 @@ export function useManagers(params: ManagerListParams): UseManagersResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setManagers([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

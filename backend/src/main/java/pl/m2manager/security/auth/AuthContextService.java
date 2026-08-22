@@ -35,18 +35,33 @@ public class AuthContextService {
 
 	public AuthContextResponse getContext(JwtAuthenticatedPrincipal principal) {
 		User user = requireUser(principal.userId());
-		Organization activeOrganization = requireOrganization(principal.organizationId());
 		List<OrganizationSummary> availableOrganizations =
 				organizationAccessService.findAvailableOrganizations(principal.userId());
+		boolean superAdmin = organizationAccessService.isSuperAdmin(principal.userId());
+		OrganizationSummary activeOrganization = resolveActiveOrganization(principal, superAdmin);
+		boolean canSwitchOrganizations = superAdmin
+				? !availableOrganizations.isEmpty()
+				: availableOrganizations.size() > 1;
 
 		return new AuthContextResponse(
 				toUserSummary(user),
-				organizationAccessService.toSummary(activeOrganization),
+				activeOrganization,
 				availableOrganizations,
-				availableOrganizations.size() > 1,
+				canSwitchOrganizations,
 				user.isMustChangePassword(),
-				organizationAccessService.isSuperAdmin(principal.userId())
+				superAdmin
 		);
+	}
+
+	private OrganizationSummary resolveActiveOrganization(
+			JwtAuthenticatedPrincipal principal,
+			boolean superAdmin
+	) {
+		if (superAdmin && organizationAccessService.isSystemOrganization(principal.organizationId())) {
+			return null;
+		}
+		Organization activeOrganization = requireOrganization(principal.organizationId());
+		return organizationAccessService.toSummary(activeOrganization);
 	}
 
 	public AuthUserSummary toUserSummary(User user) {

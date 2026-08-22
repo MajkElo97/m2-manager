@@ -3,6 +3,7 @@ import { getRoles } from '@/features/roles/api/rolesApi';
 import { getRoleErrorMessage } from '@/features/roles/rolesMessages';
 import type { Role } from '@/features/roles/types/role';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseRolesResult {
@@ -23,6 +24,15 @@ export function useRoles(): UseRolesResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setRoles([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

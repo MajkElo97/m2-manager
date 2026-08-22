@@ -89,18 +89,43 @@
 }
 
 .organizations-page__content {
-  max-width: 72rem;
+  width: 100%;
 }
 
 .organizations-table-wrapper {
+  width: 100%;
   overflow-x: auto;
 }
 
 .organizations-table {
   width: 100%;
-  min-width: 44rem;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
+}
+
+.organizations-table col.organizations-table__col-name {
+  width: 25%;
+  min-width: 12rem;
+}
+
+.organizations-table col.organizations-table__col-admin {
+  width: 30%;
+  min-width: 14rem;
+}
+
+.organizations-table col.organizations-table__col-status {
+  width: 12%;
+  min-width: 6.5rem;
+}
+
+.organizations-table col.organizations-table__col-date {
+  width: 15%;
+  min-width: 7.5rem;
+}
+
+.organizations-table col.organizations-table__col-actions {
+  width: 18%;
+  min-width: 18rem;
 }
 
 .organizations-table th,
@@ -117,49 +142,26 @@
   color: var(--color-text-muted);
 }
 
-.organizations-table th:nth-child(1),
-.organizations-table td:nth-child(1) {
-  width: 22%;
-}
-
-.organizations-table th:nth-child(2),
-.organizations-table td:nth-child(2) {
-  width: 28%;
-}
-
-.organizations-table th:nth-child(3),
-.organizations-table td:nth-child(3) {
-  width: 12%;
-}
-
-.organizations-table th:nth-child(4),
-.organizations-table td:nth-child(4) {
-  width: 14%;
-}
-
-.organizations-table th:nth-child(5),
-.organizations-table td:nth-child(5) {
-  width: 24%;
-}
-
-.organizations-table__name-cell,
-.organizations-table__admin-cell {
+.organizations-table__cell-stack {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0;
 }
 
 .organizations-table__name,
 .organizations-table__admin-name {
   font-weight: 600;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .organizations-table__slug,
 .organizations-table__admin-email {
   color: var(--color-text-muted);
   font-size: 0.8125rem;
-  word-break: break-all;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .organizations-table__date {
@@ -170,7 +172,9 @@
 .organizations-table__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
+  min-width: 16rem;
 }
 
 .organizations-mobile-list {
@@ -205,7 +209,7 @@
   margin: 0.25rem 0 0;
   color: var(--color-text-muted);
   font-size: 0.875rem;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .organizations-mobile-card__details {
@@ -228,7 +232,7 @@
 .organizations-mobile-card__details dd {
   margin: 0;
   font-size: 0.875rem;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .credentials-dialog__warning {
@@ -275,6 +279,10 @@
 
   .organizations-mobile-list {
     display: none;
+  }
+
+  .organizations-table__actions {
+    flex-wrap: nowrap;
   }
 }
 

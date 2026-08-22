@@ -18,7 +18,7 @@ export interface AuthContextUser {
 
 export interface AuthContextResponse {
   user: AuthContextUser;
-  activeOrganization: OrganizationSummary;
+  activeOrganization: OrganizationSummary | null;
   availableOrganizations: OrganizationSummary[];
   canSwitchOrganizations: boolean;
   mustChangePassword: boolean;

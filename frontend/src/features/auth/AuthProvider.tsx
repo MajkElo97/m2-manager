@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         accessToken,
         context,
-        organizationContextKey: context.activeOrganization.id,
+        organizationContextKey: context.activeOrganization?.id ?? null,
       });
       await loadPermissions();
     },

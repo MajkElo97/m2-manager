@@ -192,10 +192,11 @@ describe('AuthProvider login flow', () => {
     );
 
     function SwitchProbe() {
-      const { context, switchOrganization } = useAuth();
+      const { context, switchOrganization, organizationContextKey } = useAuth();
       return (
         <div>
-          <span data-testid="active-org">{context?.activeOrganization.name ?? 'none'}</span>
+          <span data-testid="active-org">{context?.activeOrganization?.name ?? 'none'}</span>
+          <span data-testid="org-context-key">{organizationContextKey ?? 'none'}</span>
           <button type="button" onClick={() => void switchOrganization('org-b')}>
             Switch org
           </button>
@@ -222,6 +223,85 @@ describe('AuthProvider login flow', () => {
     await waitFor(() => {
       expect(screen.getByTestId('active-org')).toHaveTextContent('Org B');
     });
+
+    vi.unstubAllGlobals();
+  });
+
+  it('establishes super admin session without active organization context', async () => {
+    const superAdminToken = createMockJwt({
+      sub: 'super-1',
+      organization_id: '00000000-0000-4000-8000-000000000001',
+      email: 'admin@m2manager.local',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    });
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
+        const url = String(input);
+
+        if (url.includes('/actuator/health')) {
+          return new Response(null, { status: 200 });
+        }
+
+        if (url.includes('/api/auth/refresh')) {
+          return Response.json({
+            accessToken: superAdminToken,
+            tokenType: 'Bearer',
+            expiresIn: 900,
+            mustChangePassword: false,
+          });
+        }
+
+        if (url.includes('/api/auth/context')) {
+          return Response.json({
+            user: {
+              id: 'super-1',
+              name: 'Admin M2',
+              email: 'admin@m2manager.local',
+            },
+            activeOrganization: null,
+            availableOrganizations: [
+              { id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+            ],
+            canSwitchOrganizations: true,
+            mustChangePassword: false,
+            superAdmin: true,
+          });
+        }
+
+        if (url.includes('/api/auth/permissions')) {
+          return Response.json({ permissions: ['SETTINGS_VIEW'] });
+        }
+
+        return new Response(null, { status: 404 });
+      }),
+    );
+
+    function SessionProbe() {
+      const { context, organizationContextKey } = useAuth();
+      return (
+        <div>
+          <span data-testid="active-org">{context?.activeOrganization?.name ?? 'none'}</span>
+          <span data-testid="org-context-key">{organizationContextKey ?? 'none'}</span>
+        </div>
+      );
+    }
+
+    render(
+      <MemoryRouter initialEntries={['/organizations']}>
+        <ThemeProvider>
+          <PermissionProvider>
+            <AuthProvider>
+              <SessionProbe />
+            </AuthProvider>
+          </PermissionProvider>
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByTestId('active-org')).toHaveTextContent('none');
+    expect(screen.getByTestId('org-context-key')).toHaveTextContent('none');
 
     vi.unstubAllGlobals();
   });

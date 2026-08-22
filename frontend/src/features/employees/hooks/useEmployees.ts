@@ -3,6 +3,7 @@ import { getEmployees } from '@/features/employees/api/employeesApi';
 import { getEmployeeErrorMessage } from '@/features/employees/employeesMessages';
 import type { Employee, EmployeeListParams } from '@/features/employees/types/employee';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseEmployeesResult {
@@ -23,6 +24,15 @@ export function useEmployees(params: EmployeeListParams): UseEmployeesResult {
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setEmployees([]);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);

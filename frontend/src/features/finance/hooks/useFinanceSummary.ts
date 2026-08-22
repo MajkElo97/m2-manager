@@ -3,6 +3,7 @@ import { getFinanceSummary } from '@/features/finance/api/financeApi';
 import { getFinanceErrorMessage } from '@/features/finance/financeMessages';
 import type { FinanceSummary, FinanceSummaryParams } from '@/features/finance/types/summary';
 import { useOrganizationContextKey } from '@/features/auth/useOrganizationContextKey';
+import { isTenantScopeActive } from '@/features/auth/tenantScope';
 import { ApiError } from '@/services/apiError';
 
 interface UseFinanceSummaryResult {
@@ -23,6 +24,15 @@ export function useFinanceSummary(params: FinanceSummaryParams): UseFinanceSumma
   const [unauthorized, setUnauthorized] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!isTenantScopeActive(organizationContextKey)) {
+      setSummary(null);
+      setIsLoading(false);
+      setError(null);
+      setForbidden(false);
+      setUnauthorized(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setForbidden(false);
