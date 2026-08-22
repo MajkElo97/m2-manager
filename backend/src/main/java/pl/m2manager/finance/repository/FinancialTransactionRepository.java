@@ -112,4 +112,6 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
 			@Param("type") TransactionType type,
 			@Param("today") LocalDate today
 	);
+
+	long countByOrganizationIdAndBuildingId(UUID organizationId, UUID buildingId);
 }

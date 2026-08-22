@@ -88,4 +88,33 @@ describe('OrganizationsPage', () => {
 
     expect(screen.queryByRole('button', { name: 'Dodaj organizację' })).not.toBeInTheDocument();
   });
+
+  it('shows active business context bar when super admin switched to business organization', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/api/organizations')) {
+          return Response.json([]);
+        }
+        return new Response(null, { status: 404 });
+      }),
+    );
+
+    renderOrganizationsPage({
+      context: {
+        user: { id: 'user-1', name: 'Super Admin', email: 'admin@m2manager.local' },
+        activeOrganization: { id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+        availableOrganizations: [{ id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    expect(await screen.findByText(/Aktywny kontekst:/)).toBeInTheDocument();
+    expect(screen.getByText('M2 Manager Dev')).toBeInTheDocument();
+
+    vi.unstubAllGlobals();
+  });
 });

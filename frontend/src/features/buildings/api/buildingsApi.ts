@@ -40,3 +40,7 @@ export function updateBuilding(id: string, data: UpdateBuildingPayload): Promise
 export function deactivateBuilding(id: string): Promise<void> {
   return apiClient.delete<void>(`/api/buildings/${id}`);
 }
+
+export function permanentDeleteBuilding(id: string): Promise<void> {
+  return apiClient.delete<void>(`/api/buildings/${id}/permanent`);
+}

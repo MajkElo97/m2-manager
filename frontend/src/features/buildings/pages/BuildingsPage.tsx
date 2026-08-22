@@ -9,15 +9,18 @@ import { Input } from '@/components/ui/Input';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { useAuth } from '@/features/auth/AuthProvider';
 import {
   createBuilding,
   deactivateBuilding,
+  permanentDeleteBuilding,
   updateBuilding,
 } from '@/features/buildings/api/buildingsApi';
 import { BuildingForm } from '@/features/buildings/components/BuildingForm';
 import { BuildingsMobileList } from '@/features/buildings/components/BuildingsMobileList';
 import { BuildingsTable } from '@/features/buildings/components/BuildingsTable';
 import { DeactivateBuildingDialog } from '@/features/buildings/components/DeactivateBuildingDialog';
+import { PermanentDeleteBuildingDialog } from '@/features/buildings/components/PermanentDeleteBuildingDialog';
 import { getBuildingErrorMessage } from '@/features/buildings/buildingsMessages';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
 import type {
@@ -38,7 +41,9 @@ interface FormModalState {
 
 export function BuildingsPage() {
   const navigate = useNavigate();
+  const { context } = useAuth();
   const { hasPermission } = usePermissions();
+  const canPermanentDelete = context?.superAdmin ?? false;
   const canViewStaircases = hasPermission('BUILDINGS_VIEW');
   const canViewScopes = hasPermission('SCOPES_VIEW');
   const canViewContacts = hasPermission('CONTACTS_VIEW') || hasPermission('BUILDINGS_VIEW');
@@ -51,9 +56,12 @@ export function BuildingsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('ACTIVE');
   const [formModal, setFormModal] = useState<FormModalState | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Building | null>(null);
+  const [permanentDeleteTarget, setPermanentDeleteTarget] = useState<Building | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [deactivateLoading, setDeactivateLoading] = useState(false);
+  const [permanentDeleteLoading, setPermanentDeleteLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [permanentDeleteError, setPermanentDeleteError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const listParams = useMemo(
@@ -155,6 +163,26 @@ export function BuildingsPage() {
     }
   };
 
+  const handlePermanentDelete = async () => {
+    if (!permanentDeleteTarget) {
+      return;
+    }
+
+    setPermanentDeleteLoading(true);
+    setPermanentDeleteError(null);
+
+    try {
+      await permanentDeleteBuilding(permanentDeleteTarget.id);
+      setPermanentDeleteTarget(null);
+      setSuccessMessage('Budynek został trwale usunięty.');
+      await refetch();
+    } catch (err) {
+      setPermanentDeleteError(getBuildingErrorMessage(err));
+    } finally {
+      setPermanentDeleteLoading(false);
+    }
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <LoadingState label="Ładowanie budynków…" />;
@@ -207,12 +235,17 @@ export function BuildingsPage() {
             canViewFinance={canViewFinance}
             canEdit={canEdit}
             canDelete={canDelete}
+            canPermanentDelete={canPermanentDelete}
             onStaircases={openStaircases}
             onScopes={openScopes}
             onContacts={openContacts}
             onFinance={openFinance}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
+            onPermanentDelete={(building) => {
+              setPermanentDeleteError(null);
+              setPermanentDeleteTarget(building);
+            }}
           />
         </div>
         <div className="buildings-page__mobile">
@@ -224,12 +257,17 @@ export function BuildingsPage() {
             canViewFinance={canViewFinance}
             canEdit={canEdit}
             canDelete={canDelete}
+            canPermanentDelete={canPermanentDelete}
             onStaircases={openStaircases}
             onScopes={openScopes}
             onContacts={openContacts}
             onFinance={openFinance}
             onEdit={openEditModal}
             onDeactivate={setDeactivateTarget}
+            onPermanentDelete={(building) => {
+              setPermanentDeleteError(null);
+              setPermanentDeleteTarget(building);
+            }}
           />
         </div>
       </>
@@ -312,6 +350,19 @@ export function BuildingsPage() {
         onCancel={() => {
           if (!deactivateLoading) {
             setDeactivateTarget(null);
+          }
+        }}
+      />
+
+      <PermanentDeleteBuildingDialog
+        building={permanentDeleteTarget}
+        loading={permanentDeleteLoading}
+        error={permanentDeleteError}
+        onConfirm={() => void handlePermanentDelete()}
+        onCancel={() => {
+          if (!permanentDeleteLoading) {
+            setPermanentDeleteTarget(null);
+            setPermanentDeleteError(null);
           }
         }}
       />

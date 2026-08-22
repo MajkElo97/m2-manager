@@ -1,5 +1,6 @@
 import { LogOut, Menu, Moon, Sun, UserCircle2 } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useTheme } from '@/hooks/ThemeProvider';
@@ -23,6 +24,7 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
   const activeOrganization = context?.activeOrganization;
   const availableOrganizations = context?.availableOrganizations ?? [];
   const canSwitch = (context?.canSwitchOrganizations ?? false) && availableOrganizations.length > 1;
+  const isSuperAdmin = context?.superAdmin ?? false;
 
   async function handleOrganizationChange(nextOrganizationId: string) {
     if (!activeOrganization || nextOrganizationId === activeOrganization.id || isSwitching) {
@@ -77,6 +79,10 @@ export function Topbar({ onMenuClick, showMenuButton }: TopbarProps) {
               <span className="topbar__organization-value">{activeOrganization.name}</span>
             )}
           </div>
+        ) : null}
+
+        {isSuperAdmin ? (
+          <Badge variant="warning">SUPER ADMIN</Badge>
         ) : null}
 
         <Button variant="ghost" size="sm" aria-label={themeLabel} onClick={toggleTheme}>

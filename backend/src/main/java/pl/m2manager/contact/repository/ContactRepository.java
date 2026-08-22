@@ -23,4 +23,6 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
 			@Param("organizationId") UUID organizationId,
 			@Param("buildingId") UUID buildingId
 	);
+
+	long countByOrganizationIdAndBuildingId(UUID organizationId, UUID buildingId);
 }

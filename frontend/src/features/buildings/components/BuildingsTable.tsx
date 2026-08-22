@@ -12,12 +12,14 @@ interface BuildingsTableProps {
   canViewFinance: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  canPermanentDelete: boolean;
   onStaircases: (building: Building) => void;
   onScopes: (building: Building) => void;
   onContacts: (building: Building) => void;
   onFinance: (building: Building) => void;
   onEdit: (building: Building) => void;
   onDeactivate: (building: Building) => void;
+  onPermanentDelete: (building: Building) => void;
 }
 
 function statusLabel(status: Building['status']): string {
@@ -36,12 +38,14 @@ export function BuildingsTable({
   canViewFinance,
   canEdit,
   canDelete,
+  canPermanentDelete,
   onStaircases,
   onScopes,
   onContacts,
   onFinance,
   onEdit,
   onDeactivate,
+  onPermanentDelete,
 }: BuildingsTableProps) {
   return (
     <div className="buildings-table-wrapper">
@@ -110,7 +114,12 @@ export function BuildingsTable({
                       Dezaktywuj
                     </Button>
                   ) : null}
-                  {!canViewStaircases && !canViewScopes && !canViewContacts && !canViewFinance && !canEdit && !canDelete ? (
+                  {canPermanentDelete && building.status === 'INACTIVE' ? (
+                    <Button variant="danger" size="sm" onClick={() => onPermanentDelete(building)}>
+                      Usuń na stałe
+                    </Button>
+                  ) : null}
+                  {!canViewStaircases && !canViewScopes && !canViewContacts && !canViewFinance && !canEdit && !canDelete && !canPermanentDelete ? (
                     <span className="buildings-table__empty-cell">—</span>
                   ) : null}
                 </div>

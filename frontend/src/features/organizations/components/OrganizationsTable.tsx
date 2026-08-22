@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import type { OrganizationListItem } from '@/features/organizations/types/organization';
 
@@ -11,7 +12,6 @@ interface OrganizationsTableProps {
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat('pl-PL', {
     dateStyle: 'medium',
-    timeStyle: 'short',
   }).format(new Date(value));
 }
 
@@ -26,34 +26,40 @@ export function OrganizationsTable({
       <table className="organizations-table">
         <thead>
           <tr>
-            <th>Nazwa organizacji</th>
-            <th>Slug</th>
-            <th>Administrator</th>
-            <th>E-mail administratora</th>
-            <th>Status</th>
-            <th>Data utworzenia</th>
-            <th>Akcje</th>
+            <th scope="col">Nazwa organizacji</th>
+            <th scope="col">Administrator</th>
+            <th scope="col">Status</th>
+            <th scope="col">Utworzono</th>
+            <th scope="col">Akcje</th>
           </tr>
         </thead>
         <tbody>
           {organizations.map((organization) => (
             <tr key={organization.id}>
-              <td>{organization.name}</td>
-              <td>{organization.slug}</td>
-              <td>{organization.adminName}</td>
-              <td>{organization.adminEmail}</td>
-              <td>{organization.active ? 'Aktywna' : 'Nieaktywna'}</td>
-              <td>{formatDate(organization.createdAt)}</td>
+              <td className="organizations-table__name-cell">
+                <span className="organizations-table__name">{organization.name}</span>
+                <span className="organizations-table__slug">{organization.slug}</span>
+              </td>
+              <td className="organizations-table__admin-cell">
+                <span className="organizations-table__admin-name">{organization.adminName}</span>
+                <span className="organizations-table__admin-email">{organization.adminEmail}</span>
+              </td>
+              <td>
+                <Badge variant={organization.active ? 'success' : 'neutral'}>
+                  {organization.active ? 'Aktywna' : 'Nieaktywna'}
+                </Badge>
+              </td>
+              <td className="organizations-table__date">{formatDate(organization.createdAt)}</td>
               <td>
                 <div className="organizations-table__actions">
-                  <Button type="button" variant="secondary" onClick={() => onEdit(organization)}>
+                  <Button type="button" variant="secondary" size="sm" onClick={() => onEdit(organization)}>
                     Edytuj
                   </Button>
-                  <Button type="button" variant="secondary" onClick={() => onResetPassword(organization)}>
+                  <Button type="button" variant="secondary" size="sm" onClick={() => onResetPassword(organization)}>
                     Resetuj hasło
                   </Button>
                   {organization.active ? (
-                    <Button type="button" variant="danger" onClick={() => onDeactivate(organization)}>
+                    <Button type="button" variant="danger" size="sm" onClick={() => onDeactivate(organization)}>
                       Dezaktywuj
                     </Button>
                   ) : null}

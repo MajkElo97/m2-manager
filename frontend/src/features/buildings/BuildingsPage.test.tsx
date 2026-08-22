@@ -7,6 +7,7 @@ import { BuildingsPage } from '@/features/buildings/pages/BuildingsPage';
 import type { Building } from '@/features/buildings/types/building';
 import { usePermissions } from '@/features/permissions/PermissionProvider';
 import { renderWithProviders } from '@/test/testUtils';
+import { TestAuthProvider } from '@/test/testAuthProvider';
 
 const sampleBuildings: Building[] = [
   {
@@ -71,6 +72,8 @@ interface MockFetchOptions {
   createStatus?: number;
   updateStatus?: number;
   deleteStatus?: number;
+  permanentDeleteStatus?: number;
+  permanentDeleteMessage?: string;
 }
 
 function createBuildingsFetchMock(options: MockFetchOptions = {}) {
@@ -159,6 +162,22 @@ function createBuildingsFetchMock(options: MockFetchOptions = {}) {
       return Response.json(updated);
     }
 
+    if (url.match(/\/api\/buildings\/[^/]+\/permanent$/) && init?.method === 'DELETE') {
+      if (options.permanentDeleteStatus && options.permanentDeleteStatus !== 204) {
+        return Response.json(
+          {
+            status: options.permanentDeleteStatus,
+            message: options.permanentDeleteMessage ?? 'Error',
+          },
+          { status: options.permanentDeleteStatus },
+        );
+      }
+
+      const id = url.split('/').slice(-2)[0]!;
+      buildings = buildings.filter((building) => building.id !== id);
+      return new Response(null, { status: 204 });
+    }
+
     if (url.match(/\/api\/buildings\/[^/]+$/) && init?.method === 'DELETE') {
       if (options.deleteStatus && options.deleteStatus !== 204) {
         return Response.json(
@@ -193,13 +212,21 @@ function BuildingsPageHarness() {
   );
 }
 
-function renderBuildingsPage(permissions: string[] = allPermissions) {
-  return renderWithProviders(<BuildingsPageHarness />, {
-    routerProps: { initialEntries: ['/buildings'] },
-    permissionsAdapter: {
-      loadPermissions: async () => permissions,
+function renderBuildingsPage(
+  permissions: string[] = allPermissions,
+  authOverrides?: Parameters<typeof TestAuthProvider>[0]['value'],
+) {
+  return renderWithProviders(
+    <TestAuthProvider value={authOverrides}>
+      <BuildingsPageHarness />
+    </TestAuthProvider>,
+    {
+      routerProps: { initialEntries: ['/buildings'] },
+      permissionsAdapter: {
+        loadPermissions: async () => permissions,
+      },
     },
-  });
+  );
 }
 
 describe('BuildingsPage', () => {
@@ -418,5 +445,129 @@ describe('BuildingsPage', () => {
       await screen.findByText('Nie udało się wykonać operacji. Spróbuj ponownie.'),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Spróbuj ponownie' })).toBeInTheDocument();
+  });
+
+  it('shows permanent delete action only for super admin on inactive buildings', async () => {
+    const user = userEvent.setup();
+    renderBuildingsPage(allPermissions, {
+      context: {
+        user: { id: 'super-1', name: 'Super Admin', email: 'admin@m2manager.local' },
+        activeOrganization: { id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+        availableOrganizations: [{ id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    await waitForBuildingInTable('PUSTA64');
+    await user.selectOptions(screen.getByLabelText('Filtr statusu'), 'INACTIVE');
+
+    expect(await screen.findByRole('button', { name: 'Usuń na stałe' })).toBeInTheDocument();
+  });
+
+  it('hides permanent delete action for regular admin', async () => {
+    const user = userEvent.setup();
+    renderBuildingsPage(allPermissions, {
+      context: {
+        user: { id: 'admin-1', name: 'Admin', email: 'admin@test.local' },
+        activeOrganization: { id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+        availableOrganizations: [{ id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: false,
+        mustChangePassword: false,
+        superAdmin: false,
+      },
+    });
+
+    await waitForBuildingInTable('PUSTA64');
+    await user.selectOptions(screen.getByLabelText('Filtr statusu'), 'INACTIVE');
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Usuń na stałe' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('requires building name confirmation before permanent delete', async () => {
+    const user = userEvent.setup();
+    renderBuildingsPage(allPermissions, {
+      context: {
+        user: { id: 'super-1', name: 'Super Admin', email: 'admin@m2manager.local' },
+        activeOrganization: { id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+        availableOrganizations: [{ id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    await waitForBuildingInTable('PUSTA64');
+    await user.selectOptions(screen.getByLabelText('Filtr statusu'), 'INACTIVE');
+    await user.click(await screen.findByRole('button', { name: 'Usuń na stałe' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Usuń budynek na stałe' });
+    const confirmButton = within(dialog).getByRole('button', { name: 'Usuń na stałe' });
+    expect(confirmButton).toBeDisabled();
+
+    await user.type(within(dialog).getByLabelText('Pole potwierdzenia'), 'test');
+    expect(confirmButton).toBeEnabled();
+  });
+
+  it('permanently deletes building and refreshes list', async () => {
+    const user = userEvent.setup();
+    renderBuildingsPage(allPermissions, {
+      context: {
+        user: { id: 'super-1', name: 'Super Admin', email: 'admin@m2manager.local' },
+        activeOrganization: { id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+        availableOrganizations: [{ id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    await waitForBuildingInTable('PUSTA64');
+    await user.selectOptions(screen.getByLabelText('Filtr statusu'), 'INACTIVE');
+    await user.click(await screen.findByRole('button', { name: 'Usuń na stałe' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Usuń budynek na stałe' });
+    await user.type(within(dialog).getByLabelText('Pole potwierdzenia'), 'test');
+    await user.click(within(dialog).getByRole('button', { name: 'Usuń na stałe' }));
+
+    expect(await screen.findByText('Budynek został trwale usunięty.')).toBeInTheDocument();
+  });
+
+  it('shows backend conflict message on permanent delete failure', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      'fetch',
+      createBuildingsFetchMock({
+        permanentDeleteStatus: 409,
+        permanentDeleteMessage:
+          'Nie można usunąć budynku, ponieważ posiada: 1 klatka',
+      }),
+    );
+
+    renderBuildingsPage(allPermissions, {
+      context: {
+        user: { id: 'super-1', name: 'Super Admin', email: 'admin@m2manager.local' },
+        activeOrganization: { id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+        availableOrganizations: [{ id: 'org-1', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    await waitForBuildingInTable('PUSTA64');
+    await user.selectOptions(screen.getByLabelText('Filtr statusu'), 'INACTIVE');
+    await user.click(await screen.findByRole('button', { name: 'Usuń na stałe' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Usuń budynek na stałe' });
+    await user.type(within(dialog).getByLabelText('Pole potwierdzenia'), 'test');
+    await user.click(within(dialog).getByRole('button', { name: 'Usuń na stałe' }));
+
+    expect(
+      await within(dialog).findByText('Nie można usunąć budynku, ponieważ posiada: 1 klatka'),
+    ).toBeInTheDocument();
   });
 });

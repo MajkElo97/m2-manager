@@ -18,4 +18,6 @@ public interface StaircaseRepository extends JpaRepository<Staircase, UUID> {
 	Optional<Staircase> findByOrganizationIdAndCode(UUID organizationId, String code);
 
 	Optional<Staircase> findByBuildingIdAndDesignation(UUID buildingId, String designation);
+
+	long countByOrganizationIdAndBuildingId(UUID organizationId, UUID buildingId);
 }

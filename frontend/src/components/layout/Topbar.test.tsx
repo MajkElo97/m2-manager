@@ -109,4 +109,35 @@ describe('Topbar organization context', () => {
 
     expect(switchOrganization).toHaveBeenCalledWith('org-2');
   });
+
+  it('shows SUPER ADMIN badge for super admin users', () => {
+    renderTopbar({
+      context: {
+        user: { id: 'super-1', name: 'Admin M2', email: 'admin@m2manager.local' },
+        activeOrganization: { id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' },
+        availableOrganizations: [{ id: 'org-dev', name: 'M2 Manager Dev', slug: 'm2-manager-dev' }],
+        canSwitchOrganizations: true,
+        mustChangePassword: false,
+        superAdmin: true,
+      },
+    });
+
+    expect(screen.getByText('SUPER ADMIN')).toBeInTheDocument();
+    expect(screen.getByText('M2 Manager Dev')).toBeInTheDocument();
+  });
+
+  it('does not show SUPER ADMIN badge for regular users', () => {
+    renderTopbar({
+      context: {
+        user: { id: 'user-1', name: 'Michał Ociepka', email: 'multiadmin@m2manager.local' },
+        activeOrganization: { id: 'org-1', name: 'M2 Group', slug: 'm2-group' },
+        availableOrganizations: [{ id: 'org-1', name: 'M2 Group', slug: 'm2-group' }],
+        canSwitchOrganizations: false,
+        mustChangePassword: false,
+        superAdmin: false,
+      },
+    });
+
+    expect(screen.queryByText('SUPER ADMIN')).not.toBeInTheDocument();
+  });
 });

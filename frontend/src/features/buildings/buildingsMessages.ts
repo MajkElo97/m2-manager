@@ -1,10 +1,15 @@
 import { ApiError } from '@/services/apiError';
 
+const DUPLICATE_BUILDING_CODE_MESSAGE = 'Building code already exists in organization';
+
 export function getBuildingErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     switch (error.status) {
       case 409:
-        return 'Budynku o tym kodzie już istnieje.';
+        if (error.message === DUPLICATE_BUILDING_CODE_MESSAGE) {
+          return 'Budynku o tym kodzie już istnieje.';
+        }
+        return error.message;
       case 404:
         return 'Budynek nie został znaleziony.';
       case 403:

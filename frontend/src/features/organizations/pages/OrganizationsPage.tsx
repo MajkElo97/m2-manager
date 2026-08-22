@@ -71,6 +71,11 @@ export function OrganizationsPage() {
 
   const { organizations, isLoading, error, forbidden, unauthorized, refetch } = useOrganizations(listParams);
 
+  const activeBusinessContext =
+    context?.activeOrganization && context.activeOrganization.slug !== 'admin'
+      ? context.activeOrganization
+      : null;
+
   if (!context?.superAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -228,6 +233,12 @@ export function OrganizationsPage() {
         </p>
       ) : null}
 
+      {activeBusinessContext ? (
+        <p className="organizations-page__context-bar" role="status">
+          Aktywny kontekst: <strong>{activeBusinessContext.name}</strong>
+        </p>
+      ) : null}
+
       {formError ? (
         <p role="alert" className="page-error-message">
           {formError}
@@ -255,7 +266,7 @@ export function OrganizationsPage() {
         </div>
       </div>
 
-      {renderContent()}
+      <div className="organizations-page__content">{renderContent()}</div>
 
       <Modal
         isOpen={formModal != null}

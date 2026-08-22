@@ -12,12 +12,14 @@ interface BuildingsMobileListProps {
   canViewFinance: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  canPermanentDelete: boolean;
   onStaircases: (building: Building) => void;
   onScopes: (building: Building) => void;
   onContacts: (building: Building) => void;
   onFinance: (building: Building) => void;
   onEdit: (building: Building) => void;
   onDeactivate: (building: Building) => void;
+  onPermanentDelete: (building: Building) => void;
 }
 
 function statusLabel(status: Building['status']): string {
@@ -36,12 +38,14 @@ export function BuildingsMobileList({
   canViewFinance,
   canEdit,
   canDelete,
+  canPermanentDelete,
   onStaircases,
   onScopes,
   onContacts,
   onFinance,
   onEdit,
   onDeactivate,
+  onPermanentDelete,
 }: BuildingsMobileListProps) {
   return (
     <div className="buildings-mobile-list">
@@ -103,6 +107,11 @@ export function BuildingsMobileList({
             {canDelete && building.status === 'ACTIVE' ? (
               <Button variant="danger" size="sm" onClick={() => onDeactivate(building)}>
                 Dezaktywuj
+              </Button>
+            ) : null}
+            {canPermanentDelete && building.status === 'INACTIVE' ? (
+              <Button variant="danger" size="sm" onClick={() => onPermanentDelete(building)}>
+                Usuń na stałe
               </Button>
             ) : null}
           </div>

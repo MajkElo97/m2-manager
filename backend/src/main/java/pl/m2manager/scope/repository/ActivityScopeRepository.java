@@ -40,4 +40,6 @@ public interface ActivityScopeRepository extends JpaRepository<ActivityScope, UU
 			@Param("status") ScopeStatus status,
 			@Param("search") String search
 	);
+
+	long countByOrganizationIdAndBuildingId(UUID organizationId, UUID buildingId);
 }
